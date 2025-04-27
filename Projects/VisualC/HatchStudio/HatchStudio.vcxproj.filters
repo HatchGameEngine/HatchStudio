@@ -1,0 +1,294 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Libraries">
+      <UniqueIdentifier>{27123709-d16e-4ea5-b19b-7ca7653e247a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Studio">
+      <UniqueIdentifier>{74ad8107-49fc-4639-82b6-8014d4ae2e35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{1a300594-72eb-4eb3-93fc-61f8f86e13a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\Controls">
+      <UniqueIdentifier>{f41c6648-be01-4f2f-bdfd-7342e0578827}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Studio\IO">
+      <UniqueIdentifier>{efa4486a-82b4-4428-bec8-09d2476e076d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Studio\ImageFormats">
+      <UniqueIdentifier>{a109de8e-f8d9-4d05-9160-78b3ae17d24f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Studio\Hashing">
+      <UniqueIdentifier>{59b131e8-dd78-4e7f-864b-c05fc2e56c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\System">
+      <UniqueIdentifier>{db7d778b-8e4f-4f08-8152-3e5f2411cbdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\Graphics">
+      <UniqueIdentifier>{503cea48-f065-49b8-97fe-34792e652d2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\Filesystem">
+      <UniqueIdentifier>{bb6d5df4-85fd-4139-abe2-38d7f39de466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Studio\Editors">
+      <UniqueIdentifier>{cda86600-2bc4-4c92-9a9e-3fc5574163f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\Components">
+      <UniqueIdentifier>{0498dba0-31bf-414b-9b9f-8aa6afd9691b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Source\Editor\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Include\Hatch\Libraries\miniz.c">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Platforms\Win32.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Diagnostics.cpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Menu.cpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\SystemDialog.cpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Application.cpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Clipboard.cpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Graphics\Renderer.cpp">
+      <Filter>Source Files\UI\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Graphics\Font.cpp">
+      <Filter>Source Files\UI\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Filesystem\Paths.cpp">
+      <Filter>Source Files\UI\Filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Button.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ComboBox.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Container.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Control.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Form.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Label.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ListView.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ShowHideTabControl.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\SplitContainer.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\TabControls.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Textbox.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ToolStrip.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ToolTip.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Hatch\Resources.cpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Hatch\Strings.cpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Impl.cpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Memory.cpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\MemoryStream.cpp">
+      <Filter>Source Files\Studio\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\ResourceStream.cpp">
+      <Filter>Source Files\Studio\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\Stream.cpp">
+      <Filter>Source Files\Studio\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\FileStream.cpp">
+      <Filter>Source Files\Studio\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\ImageFormats\GIF.cpp">
+      <Filter>Source Files\Studio\ImageFormats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Hashing\MD5.cpp">
+      <Filter>Source Files\Studio\Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Hashing\Murmur.cpp">
+      <Filter>Source Files\Studio\Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.cpp">
+      <Filter>Source Files\Studio\Editors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\clip.cpp">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\clip_win.cpp">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\image.cpp">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.c">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Hatch\Math.cpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Include\Hatch\Libraries\miniz.h">
+      <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Include\Hatch\Libraries\ini.h">
+      <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Include\Hatch\Libraries\stb_truetype.h">
+      <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Clipboard.hpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Diagnostics.hpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Menu.hpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\SystemDialog.hpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Application.hpp">
+      <Filter>Source Files\UI\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Graphics\Font.hpp">
+      <Filter>Source Files\UI\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Graphics\Renderer.hpp">
+      <Filter>Source Files\UI\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Filesystem\Paths.hpp">
+      <Filter>Source Files\UI\Filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Button.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ComboBox.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Container.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Control.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Form.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Label.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ListView.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ShowHideTabControl.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\SplitContainer.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\TabControls.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Textbox.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ToolStrip.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ToolTip.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Components\Collections.hpp">
+      <Filter>Source Files\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Impl.hpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.hpp">
+      <Filter>Source Files\Studio\Editors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Libraries\stb_image.h">
+      <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Libraries\stb_image_write.h">
+      <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.h">
+      <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

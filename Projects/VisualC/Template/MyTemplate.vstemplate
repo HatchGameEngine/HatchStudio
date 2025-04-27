@@ -1,0 +1,14 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <Name>HatchLite Class</Name>
+    <DefaultName>HatchClass</DefaultName>
+    <Description>A C++ template for creating a new Class for HatchLite.</Description>
+    <Icon>__TemplateIcon.png</Icon>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>1</SortOrder>
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.cpp" ReplaceParameters="true">Template.cpp</ProjectItem>
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.h" ReplaceParameters="true">Template.h</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

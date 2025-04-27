@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Required Files">
+      <UniqueIdentifier>{9dddfae5-c53a-4c60-9b7c-03edbfb730c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Required Files\GameLogic">
+      <UniqueIdentifier>{2a2a59e7-3960-4c8f-b00a-b76d0fa83df8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Source\Game\Globals.cpp">
+      <Filter>Required Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Hatch\GameLogic\Engine.cpp">
+      <Filter>Required Files\GameLogic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Hatch\GameLogic\GameLib.cpp">
+      <Filter>Required Files\GameLogic</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

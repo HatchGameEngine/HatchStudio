@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{7bc92c47-380a-457c-8a22-5d2b04648ff5}</ProjectGuid>
+    <RootNamespace>HatchStudio</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>HatchStudio</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="..\HatchLite Service %28Discord Game SDK%29\HatchLite Service %28Discord Game SDK%29.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)..\..\Include;$(SolutionDir)..\..\Source\Editor;$(IncludePath);</IncludePath>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Output\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)..\..\Include;$(SolutionDir)..\..\Source\Editor;$(IncludePath);</IncludePath>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Output\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)..\..\Include;$(SolutionDir)..\..\Source\Editor;$(IncludePath);</IncludePath>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Output\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)..\..\Include;$(SolutionDir)..\..\Source\Editor;$(IncludePath);</IncludePath>
+    <OutDir>$(ProjectDir)Output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Output\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_WINDOWS;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>shlwapi.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_WINDOWS;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>shlwapi.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Include\Hatch\Libraries\miniz.c" />
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\clip.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\clip_win.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\image.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.c" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Hashing\MD5.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Hashing\Murmur.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\ImageFormats\GIF.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Impl.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\FileStream.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\MemoryStream.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\ResourceStream.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\IO\Stream.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Memory.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Button.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ComboBox.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Container.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Control.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Form.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Label.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ListView.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ShowHideTabControl.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\SplitContainer.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\TabControls.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Textbox.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ToolStrip.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ToolTip.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Filesystem\Paths.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Graphics\Font.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Graphics\Renderer.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Application.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Clipboard.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Diagnostics.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\Menu.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\System\SystemDialog.cpp" />
+    <ClCompile Include="..\..\..\Source\Hatch\Math.cpp" />
+    <ClCompile Include="..\..\..\Source\Hatch\Resources.cpp" />
+    <ClCompile Include="..\..\..\Source\Hatch\Strings.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Main.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Platforms\Win32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Include\Hatch\Libraries\ini.h" />
+    <ClInclude Include="..\..\..\Include\Hatch\Libraries\miniz.h" />
+    <ClInclude Include="..\..\..\Include\Hatch\Libraries\stb_truetype.h" />
+    <ClInclude Include="..\..\..\Source\Editor\Libraries\stb_image.h" />
+    <ClInclude Include="..\..\..\Source\Editor\Libraries\stb_image_write.h" />
+    <ClInclude Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.h" />
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Impl.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Components\Collections.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Button.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ComboBox.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Container.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Control.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Form.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Label.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ListView.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ShowHideTabControl.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\SplitContainer.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\TabControls.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Textbox.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ToolStrip.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ToolTip.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Filesystem\Paths.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Graphics\Font.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Graphics\Renderer.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Application.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Clipboard.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Diagnostics.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\Menu.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\System\SystemDialog.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

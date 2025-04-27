@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{f46774b8-edf7-43cb-bbed-5bd00a2d42bc}</ItemsProjectGuid>
+    <ItemsProjectName>HatchLite Runtime</ItemsProjectName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\miniz.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\OGG\bitwise.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\OGG\framing.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\stb_vorbis.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\apiwrapper.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\bitpack.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\cpu.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\decapiwrapper.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\decinfo.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\decode.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\dequant.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\encfrag.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\encinfo.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\encoder_disabled.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\enquant.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\fdct.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\fragment.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\huffdec.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\huffenc.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\idct.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\info.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\internal.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\mathops.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\mcenc.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\quant.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\rate.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\state.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\tokenize.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Audio.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Classes.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Collision.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Diagnostics.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Game.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\GameLinker.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\GameLogic\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\GameLogic\GameLib.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Graphics.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Hashing\MD5.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Hashing\Murmur.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\ImageFormats\GIF.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Input.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\IO\FileStream.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\IO\MemoryStream.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\IO\ResourceStream.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\IO\Stream.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Math.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Memory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Renderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Resources.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Scene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Settings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Strings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\Source\Hatch\Video.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\ini.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\miniz.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\OGG\crctable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\OGG\ogg.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\OGG\os_types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\stb_image.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\stb_vorbis.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\apiwrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\bitpack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\codec.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\cpu.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\dct.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\decint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\dequant.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\encint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\enquant.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\huffdec.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\huffenc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\huffman.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\internal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\mathops.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\modedec.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\ocintrin.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\quant.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\theora.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\theoradec.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\Include\Hatch\Libraries\Theora\theoraenc.h" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,50 @@
+#pragma once
+
+class Stream {
+public:
+    virtual void    Close();
+    virtual void    Seek(Sint64 offset);
+    virtual void    SeekEnd(Sint64 offset);
+    virtual void    Skip(Sint64 offset);
+    virtual size_t  Position();
+    virtual size_t  Length();
+    virtual size_t  ReadBytes(void* data, size_t n);
+            Uint8   ReadByte();
+            Uint16  ReadUInt16();
+            Uint16  ReadUInt16SE();
+            Uint32  ReadUInt32();
+            Uint32  ReadUInt32SE();
+            Uint64  ReadUInt64();
+            Sint16  ReadInt16();
+            Sint16  ReadInt16SE();
+            Sint32  ReadInt32();
+            Sint32  ReadInt32SE();
+            Sint64  ReadInt64();
+            float   ReadFloat();
+            char*   ReadLine();
+            char*   ReadString();
+            Uint16* ReadUnicodeString();
+            char*   ReadHeaderedString();
+            void    ReadHeaderedString(char* out);
+    virtual Uint32  ReadCompressed(void* out);
+    virtual Uint32  ReadCompressed(void* out, size_t outSz);
+    virtual Uint32  ReadCompressedRaw(void* out, size_t dstSz, size_t srcSz);
+    virtual size_t  WriteBytes(void* data, size_t n);
+            void    WriteByte(Uint8 data);
+            void    WriteUInt16(Uint16 data);
+            void    WriteUInt16SE(Uint16 data);
+            void    WriteUInt32(Uint32 data);
+            void    WriteUInt32SE(Uint32 data);
+            void    WriteUInt64(Uint64 data);
+            void    WriteInt16(Sint16 data);
+            void    WriteInt16SE(Sint16 data);
+            void    WriteInt32(Sint32 data);
+            void    WriteInt32SE(Sint32 data);
+            void    WriteInt64(Sint64 data);
+            void    WriteFloat(float data);
+            void    WriteString(const char* string);
+            void    WriteHeaderedString(const char* string);
+    virtual Uint32  WriteCompressed(void* data, size_t size);
+            void    CopyTo(Stream* dest);
+    virtual         ~Stream();
+};
