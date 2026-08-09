@@ -169,6 +169,7 @@
     <ClCompile Include="..\..\..\Source\Editor\Libraries\image.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.c" />
     <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\SceneEditor.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Studio\Hashing\MD5.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Studio\Hashing\Murmur.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Studio\ImageFormats\GIF.cpp" />
@@ -178,7 +179,6 @@
     <ClCompile Include="..\..\..\Source\Editor\Studio\IO\ResourceStream.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Studio\IO\Stream.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Studio\Memory.cpp" />
-    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Button.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ComboBox.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Container.cpp" />
@@ -190,6 +190,7 @@
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\MenuBar.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\RadialKnob.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ShowHideTabControl.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\SplitContainer.cpp" />
@@ -219,9 +220,9 @@
     <ClInclude Include="..\..\..\Source\Editor\Libraries\stb_image_write.h" />
     <ClInclude Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.h" />
     <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\SceneEditor.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\Studio\Impl.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Components\Collections.hpp" />
-    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Button.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ComboBox.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Container.hpp" />
@@ -231,6 +232,7 @@
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ListView.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.hpp" />
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\RadialKnob.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ShowHideTabControl.hpp" />
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\SplitContainer.hpp" />

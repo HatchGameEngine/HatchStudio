@@ -26,6 +26,7 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Libraries/image.cpp
   ${STUDIO_SOURCES_DIR}/Libraries/tinyfiledialogs.c
   ${STUDIO_SOURCES_DIR}/Studio/Editors/ResourceEditor.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Editors/SceneEditor.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Hashing/MD5.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Hashing/Murmur.cpp
   ${STUDIO_SOURCES_DIR}/Studio/ImageFormats/GIF.cpp
@@ -35,7 +36,6 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Studio/IO/ResourceStream.cpp
   ${STUDIO_SOURCES_DIR}/Studio/IO/Stream.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Memory.cpp
-  ${STUDIO_SOURCES_DIR}/UI/Controls/AngleEditor.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Button.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.cpp
@@ -47,6 +47,7 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/UI/Controls/MenuBar.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/NumericUpDownBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/PropertyGrid.cpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/RadialKnob.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ScrollBar.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ShowHideTabControl.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/SplitContainer.cpp
@@ -74,9 +75,9 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Libraries/stb_image_write.h
   ${STUDIO_SOURCES_DIR}/Libraries/tinyfiledialogs.h
   ${STUDIO_SOURCES_DIR}/Studio/Editors/ResourceEditor.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Editors/SceneEditor.hpp
   ${STUDIO_SOURCES_DIR}/Studio/Impl.hpp
   ${STUDIO_SOURCES_DIR}/UI/Components/Collections.hpp
-  ${STUDIO_SOURCES_DIR}/UI/Controls/AngleEditor.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Button.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.hpp
@@ -86,6 +87,7 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/UI/Controls/ListView.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/NumericUpDownBox.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/PropertyGrid.hpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/RadialKnob.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ScrollBar.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ShowHideTabControl.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/SplitContainer.hpp

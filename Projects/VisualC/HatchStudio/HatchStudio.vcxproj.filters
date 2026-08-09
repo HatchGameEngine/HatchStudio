@@ -84,9 +84,6 @@
     <ClCompile Include="..\..\..\Source\Editor\UI\Filesystem\Paths.cpp">
       <Filter>Source Files\UI\Filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.cpp">
-      <Filter>Source Files\UI\Controls</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Button.cpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClCompile>
@@ -112,6 +109,9 @@
       <Filter>Source Files\UI\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\RadialKnob.cpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.cpp">
@@ -171,6 +171,9 @@
     <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.cpp">
       <Filter>Source Files\Studio\Editors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\SceneEditor.cpp">
+      <Filter>Source Files\Studio\Editors</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\Libraries\clip.cpp">
       <Filter>Source Files\Libraries</Filter>
     </ClCompile>
@@ -221,9 +224,6 @@
     <ClInclude Include="..\..\..\Source\Editor\UI\Filesystem\Paths.hpp">
       <Filter>Source Files\UI\Filesystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\AngleEditor.hpp">
-      <Filter>Source Files\UI\Controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Button.hpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClInclude>
@@ -249,6 +249,9 @@
       <Filter>Source Files\UI\Controls</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\RadialKnob.hpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.hpp">
@@ -279,6 +282,9 @@
       <Filter>Source Files\Studio</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.hpp">
+      <Filter>Source Files\Studio\Editors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\SceneEditor.hpp">
       <Filter>Source Files\Studio\Editors</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Libraries\stb_image.h">
