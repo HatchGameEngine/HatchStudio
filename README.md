@@ -1,3 +1,5 @@
 # HatchStudio
 
-HatchLite + HatchStudio source code from 2021, with a few tweaks to make it build.
+HatchStudio is a multi-purpose editor for the Hatch Game Engine.
+
+Currently, HatchStudio is a heavy work in progress. It may build, but expect features not to work, bugs, or crashes.
