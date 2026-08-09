@@ -6521,7 +6521,10 @@ struct SceneEditor : ResourceEditor {
         objectClasses->UpdateClassList();
 
         Strings::FromCString(&FilePath, "CurrentScene.HSCN", 0);
-        SetTitle("CurrentScene.HSCN*");
+        SetTitle("CurrentScene.HSCN");
+
+        SetChangesSaved();
+        JustCreated = true;
     }
 
     const Version HSCN_VERSION = { 0, 1, 1 };
@@ -7406,8 +7409,8 @@ struct SceneEditor : ResourceEditor {
         StampCollectionSave(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Stamps.HSTM"));
         TilesetSave(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Tileset.png"));
 
-        UnsavedChanges = false;
-        UpdateTitle();
+        SetChangesSaved();
+        JustCreated = false;
         return true;
     }
 
@@ -8251,8 +8254,7 @@ struct SceneEditor : ResourceEditor {
     void ActionStack_Do(Command* cmd, int siblingID) {
         actions->Do(cmd, siblingID);
 
-        UnsavedChanges = true;
-        UpdateTitle();
+        SetChangesUnsaved();
     }
     void ActionStack_Undo() {
         actions->Undo();
@@ -8869,7 +8871,12 @@ struct HatchStudioForm : Form {
         if (index < 0 || index >= MainForm->Editors.Count())
             return;
 
-        MainForm->Editors[index]->Save();
+        if (MainForm->Editors[index]->JustCreated) {
+            MainForm->Editors[index]->PromptSaveAs();
+        }
+        else {
+            MainForm->Editors[index]->Save();
+        }
     }
     static void Action_SaveResourceAs() {
         int index = MainForm->MainTabControl->SelectedIndex;
@@ -9369,30 +9376,12 @@ struct HatchStudioForm : Form {
     }
 
     void NewFile() {
-        // Form:
-        // Determines what kind of resource, and where to put it
-        char initialDir[512];
-        sprintf(initialDir, "%s/Resources/Scene.HSCN", MainForm->CurrentProjectFolderPath);
+        ResourceEditor* editor = new SceneEditor();
+        editor->New();
+        Editors.Insert(0, editor);
+        MainTabControl->TabPages.Insert(0, editor);
 
-        UI::SystemDialog::SaveFileData sfd;
-        sfd.Title = "Select a destination for the resource file...";
-        sfd.InitialDirectory = initialDir;
-        sfd.FilterPatterns.Add("*.HSCN");
-
-        if (UI::SystemDialog::SaveFile(&sfd)) {
-            const char* filepath = sfd.Filename;
-
-            ResourceEditor* editor = new SceneEditor();
-            editor->New();
-            if (!editor->SaveAs(sfd.Filename)) {
-                delete editor;
-                return;
-            }
-            Editors.Insert(0, editor);
-            MainTabControl->TabPages.Insert(0, editor);
-
-            MainTabControl->Select(0);
-        }
+        MainTabControl->Select(0);
     }
     bool OpenFile(const char* filepath) {
         char resourceFolder[1024];

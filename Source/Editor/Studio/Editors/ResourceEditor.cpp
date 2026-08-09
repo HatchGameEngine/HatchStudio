@@ -15,14 +15,16 @@
 namespace Studio {
     ResourceEditor::ResourceEditor() : TabPage() {
         Strings::Init(&FilePath, 1);
-        UnsavedChanges = true;
+
+        SetChangesUnsaved();
+
+        JustCreated = false;
     }
 
     bool ResourceEditor::Open(CString filename) {
         Strings::FromCString(&FilePath, filename, 0);
 
-        UnsavedChanges = false;
-        UpdateTitle();
+        SetChangesSaved();
 
         return Open();
     }
@@ -99,6 +101,17 @@ namespace Studio {
         return buttonid;
     }
 
+    void ResourceEditor::SetChangesUnsaved() {
+        UnsavedChanges = true;
+        UpdateTitle();
+    }
+
+    void ResourceEditor::SetChangesSaved() {
+        UnsavedChanges = false;
+        JustCreated = false;
+        UpdateTitle();
+    }
+
     void ResourceEditor::UpdateTitle() {
         char filenameBuffer[256];
         if (FilePath.Length > 0)
@@ -108,8 +121,9 @@ namespace Studio {
 
         char stringBuffer[128];
         UI::Filesystem::Paths::GetFilename(stringBuffer, filenameBuffer);
-        // if (UnsavedChanges)
-        //     strcat(stringBuffer, "*");
+        if (UnsavedChanges) {
+            strcat(stringBuffer, "*");
+        }
 
         SetTitle(stringBuffer);
     }

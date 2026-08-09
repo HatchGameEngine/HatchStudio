@@ -7,6 +7,7 @@ namespace Studio {
     public:
         String FilePath;
         bool UnsavedChanges;
+        bool JustCreated;
 
         ResourceEditor();
 
@@ -21,6 +22,9 @@ namespace Studio {
 
         bool PromptSaveAs();
         int PromptSaveChanges();
+
+        void SetChangesUnsaved();
+        void SetChangesSaved();
 
     protected:
         void UpdateTitle();
