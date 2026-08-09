@@ -277,42 +277,14 @@ void writeCircleStroke(Color* image, int pitch, int radiusX, int radiusY, int ce
 		setpixel4(image, pitch, centerX, centerY, floor(x) - 1, y, Color(0xFFFFFF, maxTransparency - $transparency));
 	}
 }
-void writeCircleFilled(Color* image, int pitch, int radiusX, int radiusY, int centerX, int centerY) {
-	//float radiusX2 = radiusX * radiusX;
-	//float radiusY2 = radiusY * radiusY;
-	//int maxTransparency = 0xFF; // 127
-	//// upper and lower halves
-	//int quarter = (int)round(radiusX2 / sqrt(radiusX2 + radiusY2));
-	//for (int x = 0; x <= quarter; x++) {
-	//	float y = radiusY * sqrt(1.0f - x * x / radiusX2);
-	//	float $error = y - floor(y);
-	//	float $transparency = round($error * maxTransparency);
-	//	setpixel4(image, pitch, centerX, centerY, x, floor(y), Color(0xFFFFFF, $transparency));
-	//	setpixel4(image, pitch, centerX, centerY, x, floor(y) - 1, Color(0xFFFFFF, maxTransparency - $transparency));
-	//	for (int y2 = 0; y2 < floor(y); y2++) {
-	//		setpixel4(image, pitch, centerX, centerY, x, y2, Color(0xFFFFFF, maxTransparency));
-	//	}
-	//}
-	//// right and left halves
-	//quarter = (int)round(radiusY2 / sqrt(radiusX2 + radiusY2));
-	//for (int y = 0; y <= quarter; y++) {
-	//	float x = radiusX * sqrt(1.0f - y * y / radiusY2);
-	//	float $error = x - floor(x);
-	//	float $transparency = round($error * maxTransparency);
-	//	setpixel4(image, pitch, centerX, centerY, floor(x), y, Color(0xFFFFFF, $transparency));
-	//	setpixel4(image, pitch, centerX, centerY, floor(x) - 1, y, Color(0xFFFFFF, maxTransparency - $transparency));
-	//	for (int x2 = 0; x2 < floor(x); x2++) {
-	//		setpixel4(image, pitch, centerX, centerY, x2, y, );
-	//	}
-	//}
-
+void writeCircleFilled(Color* image, int pitch, int radiusX, int radiusY, int centerX, int centerY, int offsetX = 0, int offsetY = 0) {
 	for (float y = 0; y < radiusY * 2.0f; y++) {
 		for (float x = 0; x < radiusX * 2.0f; x++) {
 			float deltaX = radiusX - x - 0.5f;
 			float deltaY = radiusY - y - 0.5f;
 			float distance = sqrt(deltaX * deltaX + deltaY * deltaY);
 			int alpha = M_CLAMP(radiusX - distance, 0.0f, 1.0f) * 0xFF;
-			setpixel(image, x, y, pitch, Color(0xFFFFFF, alpha));
+			setpixel(image, x + offsetX, y + offsetY, pitch, Color(0xFFFFFF, alpha));
 		}
 	}
 }
@@ -463,6 +435,34 @@ void CreateShapeTexture_EllipseFill(SDL_Texture** texture, int width, int height
     }
 
 	free(image);
+}
+void CreateShapeTexture_Radio(SDL_Texture** texture, int width, int height) {
+    Color* image = (Color*)calloc(width * height, sizeof(Color));
+    if (image == NULL) {
+        *texture = NULL;
+        return;
+    }
+
+    const int adjustment = 3;
+
+    writeCircleStroke(image, width, width / 2, height / 2, width / 2, height / 2);
+    writeCircleFilled(image,
+        width,
+        (width / 2) - adjustment,
+        (height / 2) - adjustment,
+        (width / 2) - adjustment,
+        (height / 2) - adjustment,
+        adjustment,
+        adjustment
+    );
+
+    if (!Studio::Textures::CreateTextureFromSTBI(texture, (unsigned char*)image, width, height)) {
+        *texture = NULL;
+        free(image);
+        return;
+    }
+
+    free(image);
 }
 
 void CreateShapeTexture_RoundRectFill(SDL_Texture** texture, int width, int height, int c0, int c1, int c2, int c3) {

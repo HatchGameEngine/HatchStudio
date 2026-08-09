@@ -69,7 +69,7 @@ void IMenu_Dispose(struct IMenu* menu) {
 
 }
 
-int  IMenu_AddItem(struct IMenu* menu, const char* title, void (*action)(void), int shortcut, int enabled, int type) {
+int  IMenu_AddItem(struct IMenu* menu, const char* title, void (*action)(void), int shortcut, int enabled, int type, int altShortcut) {
     struct MacOS_IMenu* macos_menu = (struct MacOS_IMenu*)menu->Data;
 
 	NSString* nsTitle = [NSString stringWithUTF8String:title];
@@ -87,7 +87,7 @@ int  IMenu_AddItem(struct IMenu* menu, const char* title, void (*action)(void), 
 
 	return (int)[macos_menu->nsMenu indexOfItem:menuItem];
 }
-int  IMenu_AddSubmenu(struct IMenu* menu, struct IMenu* submenu, const char* title) {
+int  IMenu_AddSubmenu(struct IMenu* menu, struct IMenu* submenu, const char* title, int altShortcut) {
     struct MacOS_IMenu* macos_menu = (struct MacOS_IMenu*)menu->Data;
     struct MacOS_IMenu* macos_submenu = (struct MacOS_IMenu*)submenu->Data;
 

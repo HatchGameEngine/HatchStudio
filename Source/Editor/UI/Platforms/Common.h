@@ -4,9 +4,11 @@
 extern "C" {
 #endif
 
-struct IMenu {
-    void* Data;
-};
+#include <Hatch/Primitives.h>
+
+#if defined(_MACOS) || defined(_WINDOWS)
+#define USE_NATIVE_MENU
+#endif
 
 enum ShortcutModifier {
     SM_NONE = 0x00,
@@ -23,6 +25,32 @@ enum ItemType {
     IT_RADIO_UNCHECKED,
     IT_CHECKMARK_CHECKED,
     IT_RADIO_CHECKED,
+    IT_SUBMENU,
+    IT_SEPARATOR
+};
+
+#ifndef USE_NATIVE_MENU
+struct IMenuItem {
+    String Text;
+    String ShortcutText;
+    void (*Action)();
+    void* Submenu;
+    int Shortcut;
+    int AltShortcut;
+    bool Enabled;
+    int Type;
+    int Index;
+};
+#endif
+
+struct IMenu {
+    void* Data;
+
+#ifndef USE_NATIVE_MENU
+    IMenuItem** Items;
+    int Capacity;
+    int Count;
+#endif
 };
 
 extern void IMenu_Init(void);
@@ -30,8 +58,8 @@ extern void IMenu_Init(void);
 extern struct IMenu* IMenu_Create(void);
 
 // Adds an item to the menu, returns the index
-extern int IMenu_AddItem(struct IMenu* menu, const char* title, void (*action)(), int shortcut, int enabled, int type);
-extern int IMenu_AddSubmenu(struct IMenu* menu, struct IMenu* submenu, const char* title);
+extern int IMenu_AddItem(struct IMenu* menu, const char* title, void (*action)(), int shortcut, int enabled, int type, int altShortcut);
+extern int IMenu_AddSubmenu(struct IMenu* menu, struct IMenu* submenu, const char* title, int altShortcut);
 extern int IMenu_AddSeparator(struct IMenu* menu);
 extern void IMenu_EditItem(struct IMenu* menu, int index, const char* title, void (*action)(void), int shortcut, int enabled, int type);
 extern void IMenu_ClearItems(struct IMenu* menu);

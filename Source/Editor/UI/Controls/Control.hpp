@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-// #include <SDL2/SDL_syswm.h>
 
 #include PLATFORM_SETTINGS
 #include <Hatch/Primitives.h>
@@ -257,6 +256,7 @@ struct TextEventArgs : EventArgs {
 
 void CreateShapeTexture_EllipseStroke(SDL_Texture** texture, int width, int height);
 void CreateShapeTexture_EllipseFill(SDL_Texture** texture, int width, int height);
+void CreateShapeTexture_Radio(SDL_Texture** texture, int width, int height);
 void CreateShapeTexture_RoundRectFill(SDL_Texture** texture, int width, int height, int c0, int c1, int c2, int c3);
 void CreateShapeTexture_TriangleStroke(SDL_Texture** texture, int width, int height);
 void CreateShapeTexture_TriangleFill(SDL_Texture** texture, int width, int height);
@@ -431,11 +431,6 @@ public:
                     size.W -= ChildSize.W;
                     break;
                 case DOCK_FILL:
-                    // TODO: This needs to be done after the other DOCK types, so that this just takes the remaining space despite Control order
-                    Child->Location = head;
-                    Child->Size = size;
-
-                    size = { 0, 0 };
                     break;
                 }
             }
@@ -450,6 +445,18 @@ public:
                 if (Child->Anchor & ANCHOR_BOTTOM)
                     Child->Location.Y = (value.H - Padding.Bottom) - ChildSize.H;
                 */
+            }
+        }
+
+        for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+            auto Child = Controls.Items[i];
+
+            // This needs to be done after the other DOCK types, so that this just takes the remaining space despite Control order
+            if (Child->Dock == DOCK_FILL && Child->Anchor == ANCHOR_NONE) {
+                Child->Location = head;
+                Child->Size = size;
+
+                size = { 0, 0 };
             }
         }
     }
@@ -521,7 +528,7 @@ public:
                     OnMouseDown(&ev);
                 }
 
-                for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+                for (int i = 0; i < Controls.Count(); i++) {
                     Controls.Items[i]->HandleSDLEvent(e);
                 }
             }
@@ -573,7 +580,7 @@ public:
                 }
             }
 
-            for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+            for (int i = 0; i < Controls.Count(); i++) {
                 Controls.Items[i]->HandleSDLEvent(e);
             }
             break;
@@ -600,7 +607,7 @@ public:
                     OnMouseUp(&ev);
                 }
 
-                for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+                for (int i = 0; i < Controls.Count(); i++) {
                     Controls.Items[i]->HandleSDLEvent(e);
                 }
             }
@@ -620,7 +627,7 @@ public:
                     OnMouseWheel(&ev);
                 }
 
-                for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+                for (int i = 0; i < Controls.Count(); i++) {
                     Controls.Items[i]->HandleSDLEvent(e);
                 }
             }
@@ -637,7 +644,7 @@ public:
                 OnKeyDown(&ev);
             }
 
-            for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+            for (int i = 0; i < Controls.Count(); i++) {
                 Controls.Items[i]->HandleSDLEvent(e);
             }
             break;
@@ -653,7 +660,7 @@ public:
                 OnKeyUp(&ev);
             }
 
-            for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+            for (int i = 0; i < Controls.Count(); i++) {
                 Controls.Items[i]->HandleSDLEvent(e);
             }
             break;
@@ -667,7 +674,7 @@ public:
                 OnTextInputted(&ev);
             }
 
-            for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+            for (int i = 0; i < Controls.Count(); i++) {
                 Controls.Items[i]->HandleSDLEvent(e);
             }
             break;
@@ -681,7 +688,7 @@ public:
                 OnTextEdited(&ev);
             }
 
-            for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+            for (int i = 0; i < Controls.Count(); i++) {
                 Controls.Items[i]->HandleSDLEvent(e);
             }
             break;

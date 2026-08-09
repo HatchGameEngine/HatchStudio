@@ -135,7 +135,7 @@ IMenu* IMenu_Create() {
     menu->Data = win32_menu;
     return menu;
 }
-int IMenu_AddItem(IMenu* menu, const char* title, void (*action)(), int shortcut, int enabled, int type) {
+int IMenu_AddItem(IMenu* menu, const char* title, void (*action)(), int shortcut, int enabled, int type, int altShortcut) {
     Win32_IMenu* win32_menu = (Win32_IMenu*)menu->Data;
 
     char* itemTitle = (char*)malloc(48);
@@ -192,7 +192,7 @@ int IMenu_AddItem(IMenu* menu, const char* title, void (*action)(), int shortcut
 
     return index;
 }
-int IMenu_AddSubmenu(IMenu* menu, IMenu* submenu, const char* title) {
+int IMenu_AddSubmenu(IMenu* menu, IMenu* submenu, const char* title, int altShortcut) {
     Win32_IMenu* win32_menu = (Win32_IMenu*)menu->Data;
     Win32_IMenu* win32_submenu = (Win32_IMenu*)submenu->Data;
 

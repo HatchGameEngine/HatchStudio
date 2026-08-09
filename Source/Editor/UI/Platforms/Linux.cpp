@@ -3,6 +3,8 @@
 #include <chrono>
 #include <thread>
 
+#include <signal.h>
+
 #include PLATFORM_SETTINGS
 #include <Hatch/Primitives.h>
 #include <Hatch/Types.h>
@@ -16,9 +18,10 @@ extern "C" {
 }
 
 #include <UI/Graphics/Renderer.hpp>
+#include <UI/System/Application.hpp>
 
 IMenu* IMenu_Create() {
-    return (IMenu*)calloc(1, sizeof(IMenu));
+    return NULL;
 }
 int IMenu_AddItem(IMenu* menu, const char* title, void (*action)(), int shortcut, int enabled, int type, int altShortcut) {
     return -1;
@@ -37,13 +40,9 @@ void IMenu_SetAppleMenu(struct IMenu* menu) { }
 void IMenu_SetWindowMenu(struct IMenu* menu) { }
 void IMenu_SetHelpMenu(struct IMenu* menu) { }
 
-void IMenu_Dispose(struct IMenu* menu) {
-    free(menu);
-}
+void IMenu_Dispose(struct IMenu* menu) { }
 
-void IMenu_Init() {
-    Diagnostics::SetError("Menus unsupported in this system!");
-}
+void IMenu_Init() { }
 
 namespace UI::Graphics::Renderer {
     void Sleep(double seconds) {

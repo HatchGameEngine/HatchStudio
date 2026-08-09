@@ -44,6 +44,7 @@
 #include <UI/Controls/Form.hpp>
 #include <UI/Controls/Label.hpp>
 #include <UI/Controls/ListView.hpp>
+#include <UI/Controls/MenuBar.hpp>
 #include <UI/Controls/NumericUpDownBox.hpp>
 #include <UI/Controls/PropertyGrid.hpp>
 #include <UI/Controls/ScrollBar.hpp>
@@ -8982,16 +8983,16 @@ struct HatchStudioForm : Form {
         menuHelp = new UI::Menu();
 
         // "File" menu
-        menuFile->AddItem("New Project...", Action_NewProject, SHORTCUT_NEW_PROJECT, true);
-        menuFile->AddItem("Open Project...", Action_OpenProject, SHORTCUT_OPEN_PROJECT, true);
-        menuFile->AddSubmenu("Recent Projects", menuRecentProjects);
-        menuFile->AddItem("Close Project", Action_CloseProject, SHORTCUT_CLOSE_PROJECT, true);
+        menuFile->AddItem("New Project...", Action_NewProject, SHORTCUT_NEW_PROJECT, true, UI::Menu::ItemType::IT_TEXT, 'N');
+        menuFile->AddItem("Open Project...", Action_OpenProject, SHORTCUT_OPEN_PROJECT, true, UI::Menu::ItemType::IT_TEXT, 'O');
+        menuFile->AddSubmenu("Recent Projects", menuRecentProjects, 'R');
+        menuFile->AddItem("Close Project", Action_CloseProject, SHORTCUT_CLOSE_PROJECT, true, UI::Menu::ItemType::IT_TEXT, 'C');
         menuFile->AddSeparator();
         menuFile->AddItem("New Resource...", Action_NewResource, SHORTCUT_NEW_FILE, true);
         menuFile->AddItem("Open Resource...", Action_OpenResource, SHORTCUT_OPEN_FILE, true);
         menuFile->AddSeparator();
-        menuIndex_SaveFile = menuFile->AddItem("Save", Action_SaveResource, SHORTCUT_SAVE_FILE, true);
-        menuIndex_SaveFileAs = menuFile->AddItem("Save As...", Action_SaveResourceAs, SHORTCUT_SAVE_FILE_AS, true);
+        menuIndex_SaveFile = menuFile->AddItem("Save", Action_SaveResource, SHORTCUT_SAVE_FILE, true, UI::Menu::ItemType::IT_TEXT, 'S');
+        menuIndex_SaveFileAs = menuFile->AddItem("Save As...", Action_SaveResourceAs, SHORTCUT_SAVE_FILE_AS, true, UI::Menu::ItemType::IT_TEXT, 'A');
         menuIndex_SaveAllFile = menuFile->AddItem("Save All", Action_SaveAllResources, SHORTCUT_SAVE_ALL, true);
         menuFile->AddSeparator();
         menuIndex_CloseFile = menuFile->AddItem("Close", Action_CloseResource, SHORTCUT_CLOSE_FILE, true);
@@ -9037,12 +9038,6 @@ struct HatchStudioForm : Form {
         menuHelp->AddItem("About HatchStudio", Action_AboutHatchStudio, UI::Menu::SM_NONE, false);
 #endif
 
-        // Main menu (Windows)
-#if defined(_WINDOWS)
-        mainMenu->AddSubmenu("File", menuFile);
-        mainMenu->AddSubmenu("Project", menuProject);
-        mainMenu->AddSubmenu("Help", menuHelp);
-#endif
         // Main menu (MacOS)
 #if defined(_MACOS)
         menuApple = new UI::Menu();
@@ -9056,15 +9051,18 @@ struct HatchStudioForm : Form {
         UI::Menu::SetAppleMenu(menuApple);
         UI::Menu::SetWindowMenu(menuWindow);
         UI::Menu::SetHelpMenu(menuHelp);
-#endif
+#else
         // Main menu (Anywhere else)
-#if defined(_LINUX)
-        mainMenu->AddSubmenu("File", menuFile);
-        mainMenu->AddSubmenu("Project", menuProject);
-        mainMenu->AddSubmenu("Help", menuHelp);
+        mainMenu->AddSubmenu("File", menuFile, 'F');
+        mainMenu->AddSubmenu("Project", menuProject, 'P');
+        mainMenu->AddSubmenu("Help", menuHelp, 'H');
 #endif
 
-        UI::Menu::SetMainMenu(mainMenu);
+#ifdef USE_NATIVE_MENU
+        UI::Menu::SetNativeMainMenu(mainMenu);
+#else
+        MenuBarControl->SetMenu(mainMenu);
+#endif
     }
 
     HatchProject* CurrentProject = NULL;
@@ -9077,9 +9075,11 @@ struct HatchStudioForm : Form {
     HatchStudioSettings* Preferences = NULL;
     ArrayList<ResourceEditor*> Editors;
     TabControl* MainTabControl = NULL;
+    MenuBar* MenuBarControl = NULL;
     HatchStudioForm() : Form(100, 100, NULL) { }
     ~HatchStudioForm() {
         delete MainTabControl;
+        delete MenuBarControl;
     }
 
     bool LoadSettings() {
@@ -9448,6 +9448,7 @@ struct HatchStudioForm : Form {
         MainForm = this;
 
         BackColor = Color(0x21252B, 0xFF);
+
         MainTabControl = new TabControl();
         MainTabControl->Dock = DOCK_FILL;
         MainTabControl->SelectedIndex = 0;
@@ -9455,6 +9456,12 @@ struct HatchStudioForm : Form {
         MainTabControl->MaxSize = 200;
         MainTabControl->onSelected += std::bind(&HatchStudioForm::OnTabChange, this, std::placeholders::_1, std::placeholders::_2);
         Controls.Add(MainTabControl);
+
+#ifndef USE_NATIVE_MENU
+        MenuBarControl = new MenuBar();
+        MenuBarControl->Size = { Size.Get().W, MenuBarControl->ItemHeight };
+        Controls.Add(MenuBarControl);
+#endif
 
         SDL_Rect displayBounds;
         if (SDL_GetDisplayBounds(0, &displayBounds) == 0) {
@@ -9503,6 +9510,35 @@ struct HatchStudioForm : Form {
         }
 
         SDL_ShowWindow(UI::Graphics::Renderer::Window);
+    }
+
+    void HandleSDLEvent(SDL_Event* e) {
+        switch (e->type) {
+        case SDL_KEYDOWN:
+            CheckShortcuts(e->key.keysym.sym, (SDL_Keymod)e->key.keysym.mod);
+            break;
+
+        case SDL_WINDOWEVENT:
+            switch (e->window.event) {
+            case SDL_WINDOWEVENT_RESIZED:
+                Size = { e->window.data1, e->window.data2 };
+                OnResized(NULL);
+                break;
+            }
+            break;
+        }
+
+        // Handle the menu bar control first
+        MenuBarControl->HandleSDLEvent(e);
+
+        if (MenuBarControl->Dropdown == NULL) {
+            // If a dropdown is up then don't handle the other controls
+            for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
+                if (Controls.Items[i] != MenuBarControl) {
+                    Controls.Items[i]->HandleSDLEvent(e);
+                }
+            }
+        }
     }
 };
 

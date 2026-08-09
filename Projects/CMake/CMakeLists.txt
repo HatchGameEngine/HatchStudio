@@ -40,9 +40,11 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Control.cpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DropDown.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Form.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Label.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ListView.cpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/MenuBar.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/NumericUpDownBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/PropertyGrid.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ScrollBar.cpp
@@ -107,7 +109,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   target_compile_definitions(${PROJECT_NAME} PUBLIC
-    WIN32 _WINDOWS
+    WIN32 _WINDOWS -DUSE_NATIVE_MENU
   )
 
   target_include_directories(${PROJECT_NAME} PUBLIC
@@ -126,7 +128,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   )
 else()
   target_sources(${PROJECT_NAME} PUBLIC
-    ${STUDIO_SOURCES_DIR}/UI/Platforms/Fallback.cpp
+    ${STUDIO_SOURCES_DIR}/UI/Platforms/Linux.cpp
     ${STUDIO_SOURCES_DIR}/Libraries/clip_none.cpp)
 
   find_package(SDL2 REQUIRED)

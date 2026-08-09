@@ -104,7 +104,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_WINDOWS;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_WINDOWS;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USE_NATIVE_MENU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -120,7 +120,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_WINDOWS;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_WINDOWS;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;USE_NATIVE_MENU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -136,7 +136,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;_DEBUG;_CONSOLE;USE_NATIVE_MENU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -151,7 +151,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_SETTINGS=&lt;Studio/Settings.h&gt;;NDEBUG;_CONSOLE;USE_NATIVE_MENU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -183,9 +183,11 @@
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ComboBox.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Container.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Control.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\DropDown.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Form.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Label.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ListView.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\MenuBar.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\NumericUpDownBox.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\PropertyGrid.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\ScrollBar.cpp" />

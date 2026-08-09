@@ -58,6 +58,7 @@ namespace UI {
             }
             void LoadFonts() {
                 UI::Graphics::Font::Arial[12] = LoadFontFaceFromFile("Resources_Editor/OpenSans.ttf", 16);
+                UI::Graphics::Font::Arial[20] = LoadFontFaceFromFile("Resources_Editor/OpenSans.ttf", 20);
             }
 
             void RunFrame(bool update) {

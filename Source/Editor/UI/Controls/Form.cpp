@@ -19,21 +19,6 @@ void Form::HandleSDLEvent(SDL_Event* e) {
     case SDL_KEYDOWN:
         CheckShortcuts(e->key.keysym.sym, (SDL_Keymod)e->key.keysym.mod);
         break;
-
-    case SDL_WINDOWEVENT:
-        switch (e->window.event) {
-        case SDL_WINDOWEVENT_RESIZED:
-            if (MainForm) {
-                Size = { e->window.data1, e->window.data2 };
-                OnResized(NULL);
-            }
-            break;
-        case SDL_WINDOWEVENT_CLOSE:
-            // if (MainForm)
-                // Close();
-            break;
-        }
-        break;
     }
 
     for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
