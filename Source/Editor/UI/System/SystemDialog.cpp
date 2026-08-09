@@ -74,10 +74,10 @@ namespace UI {
                 saveFileData->FilterPatterns.Count(), saveFileData->FilterPatterns.Items,
                 NULL);
 
-            UI::Filesystem::Paths::SanitizePath((char*)saveFileData->Filename);
-
-            if (saveFileData->Filename)
+            if (saveFileData->Filename) {
+                UI::Filesystem::Paths::SanitizePath((char*)saveFileData->Filename);
                 return true;
+            }
 
             return false;
         }
