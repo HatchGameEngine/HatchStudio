@@ -27,6 +27,9 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Libraries/tinyfiledialogs.c
   ${STUDIO_SOURCES_DIR}/Studio/Editors/ResourceEditor.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Editors/SceneEditor.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileCollisionEditorPanel.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileDrawingWidget.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileSelector.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Hashing/MD5.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Hashing/Murmur.cpp
   ${STUDIO_SOURCES_DIR}/Studio/ImageFormats/GIF.cpp
@@ -76,6 +79,9 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Libraries/tinyfiledialogs.h
   ${STUDIO_SOURCES_DIR}/Studio/Editors/ResourceEditor.hpp
   ${STUDIO_SOURCES_DIR}/Studio/Editors/SceneEditor.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileCollisionEditorPanel.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileDrawingWidget.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileSelector.hpp
   ${STUDIO_SOURCES_DIR}/Studio/Impl.hpp
   ${STUDIO_SOURCES_DIR}/UI/Components/Collections.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Button.hpp

@@ -40,6 +40,9 @@
 #include <UI/Filesystem/Paths.hpp>
 #include <UI/System/SystemDialog.hpp>
 
+#include <Studio/Subcontrols/TileCollisionEditorPanel.hpp>
+#include <Studio/Subcontrols/TileSelector.hpp>
+
 #include <Studio/Editors/SceneEditor.hpp>
 
 #define TOLOWER(ch) SDL_tolower(ch)
@@ -117,6 +120,8 @@ void SceneEditor::New() {
     Init();
 
     LinkedStage = new Stage();
+    tileSelector->LinkedStage = LinkedStage;
+    tileCollisionEditor->SetStage(LinkedStage);
 
     LayerNew(0);
     tilePlacementField->CurrentLayer = 0;
@@ -980,6 +985,9 @@ bool SceneEditor::Open() {
     layerControls->UpdateList();
     objectClasses->UpdateClassList();
     entityProperties->UpdateEntityList();
+
+    tileSelector->LinkedStage = LinkedStage;
+    tileCollisionEditor->SetStage(LinkedStage);
 
     if (LayerCount > 0) {
         if (tilePlacementField->CurrentLayer >= 0)
@@ -1894,9 +1902,9 @@ SceneEditor::SceneEditor() : ResourceEditor() {
     TabPage* tabPageObjects = StupidGC(new TabPage("Objects"));
     TabPage* tabPageLayers = StupidGC(new TabPage("Layers"));
     TabPage* tabPageSettings = StupidGC(new TabPage("Settings"));
-    tileSelector = new TileSelector(this);
+    tileSelector = new TileSelector(NULL);
     stampCollection = new StampCollection(this);
-    tileCollisionEditor = new TileCollisionEditor(this);
+    tileCollisionEditor = new TileCollisionEditorPanel(this);
     tilePlacementField = new TilePlacementField(this);
     entityProperties = new EntityProperties(this);
     objectClasses = new ObjectClasses(this);
