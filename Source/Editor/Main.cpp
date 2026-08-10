@@ -571,7 +571,7 @@ struct HatchStudioForm : Form {
 
         // "Help" menu
         menuHelp->AddItem("Documentation", Action_Documentation, UI::Menu::SM_NONE, false);
-#if defined(_WINDOWS)
+#if! defined(_MACOS)
         menuHelp->AddSeparator();
         menuHelp->AddItem("About HatchStudio", Action_AboutHatchStudio, UI::Menu::SM_NONE, false);
 #endif
