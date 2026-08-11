@@ -153,7 +153,7 @@ namespace Graphics {
 
     extern int DrawCollision;
 
-    extern SDL_Texture** TileImageData;
+    extern SDL_Texture* TileImageData;
     extern SDL_Texture** TileCollisionImageData;
 
     void Init();

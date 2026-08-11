@@ -770,7 +770,15 @@ struct SceneEditor : Studio::ResourceEditor {
                             Bounds.y + tY + (Bounds.h - CurrentStamp->Height * TILE_SIZE) / 2, TILE_SIZE, TILE_SIZE };
 
                         UI::Graphics::Renderer::DstRectAdjustment(&dst);
-                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->Tileset.TileImageTextures[tile->FlipY << 1 | tile->FlipX], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+
+                        int flipFlags = SDL_FLIP_NONE;
+                        if (tile->FlipX) {
+                            flipFlags |= SDL_FLIP_HORIZONTAL;
+                        }
+                        if (tile->FlipY) {
+                            flipFlags |= SDL_FLIP_VERTICAL;
+                        }
+                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->Tileset.TileImageTexture, &src, &dst, 0.0, NULL, (SDL_RendererFlip)flipFlags);
                     }
 
                     ClipEnd(&buffer);

@@ -244,7 +244,7 @@ namespace Graphics {
     Vector2     DrawMinPos;
     Vector2     DrawMaxPos;
 
-    SDL_Texture** TileImageData;
+    SDL_Texture* TileImageData;
     SDL_Texture** TileCollisionImageData;
     int DrawCollision = 0;
 
@@ -622,27 +622,33 @@ namespace Graphics {
             SetHighlightBounds(dst);
 
             int tileFID = tile.FlipX | (tile.FlipY << 1);
-            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileImageData[tileFID], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+            int flipFlags = SDL_FLIP_NONE;
+            if (tile.FlipX) {
+                flipFlags |= SDL_FLIP_HORIZONTAL;
+            }
+            if (tile.FlipY) {
+                flipFlags |= SDL_FLIP_VERTICAL;
+            }
+            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileImageData, &src, &dst, 0.0, NULL, (SDL_RendererFlip)flipFlags);
 
             if (DrawCollision > 0) {
                 int plane = DrawCollision - 1;
                 int planeSolidity = plane ? tile.PlaneB : tile.PlaneA;
-                int imgIndex = tileFID | (plane << 2);
 
                 switch (planeSolidity) {
                 case SOLID_NONE:
                     break;
                 case SOLID_PLATFORM:
-                    SDL_SetTextureColorMod(TileCollisionImageData[imgIndex], 0xFF, 0xFF, 0x00);
-                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileCollisionImageData[imgIndex], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                    SDL_SetTextureColorMod(TileCollisionImageData[plane], 0xFF, 0xFF, 0x00);
+                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileCollisionImageData[plane], &src, &dst, 0.0, NULL, (SDL_RendererFlip)flipFlags);
                     break;
                 case SOLID_FALLTHROUGH:
-                    SDL_SetTextureColorMod(TileCollisionImageData[imgIndex], 0xFF, 0x00, 0x00);
-                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileCollisionImageData[imgIndex], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                    SDL_SetTextureColorMod(TileCollisionImageData[plane], 0xFF, 0x00, 0x00);
+                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileCollisionImageData[plane], &src, &dst, 0.0, NULL, (SDL_RendererFlip)flipFlags);
                     break;
                 case SOLID_FULL:
-                    SDL_SetTextureColorMod(TileCollisionImageData[imgIndex], 0xFF, 0xFF, 0xFF);
-                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileCollisionImageData[imgIndex], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                    SDL_SetTextureColorMod(TileCollisionImageData[plane], 0xFF, 0xFF, 0xFF);
+                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, TileCollisionImageData[plane], &src, &dst, 0.0, NULL, (SDL_RendererFlip)flipFlags);
                     break;
                 }
             }

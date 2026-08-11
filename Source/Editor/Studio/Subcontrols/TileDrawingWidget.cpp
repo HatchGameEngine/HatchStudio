@@ -198,7 +198,7 @@ void TileDrawingWidget::Render() {
             SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
             SDL_Rect dst = bounds;
             UI::Graphics::Renderer::DstRectAdjustment(&dst);
-            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
 
             EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
 

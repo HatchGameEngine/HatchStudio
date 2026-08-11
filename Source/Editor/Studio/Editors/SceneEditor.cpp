@@ -1801,8 +1801,12 @@ SceneEditor::~SceneEditor() {
 void SceneEditor::LinkScene() {
 	// Link currently active scene
 	Scene::Layers = this->Layers;
-	Graphics::TileImageData = this->LinkedStage->Tileset.TileImageTextures;
-	Graphics::TileCollisionImageData = this->LinkedStage->Tileset.TileCollisionTextures;
+
+	if (this->LinkedStage) {
+		Graphics::TileImageData = this->LinkedStage->Tileset.TileImageTexture;
+		Graphics::TileCollisionImageData = this->LinkedStage->Tileset.TileCollisionTextures;
+	}
+
 	Scene::CurrentEntity = this->CurrentEntity;
 	Scene::EntitySlots = this->EntitySlots;
 	Scene::ClassIndexList = this->ClassIndexList;

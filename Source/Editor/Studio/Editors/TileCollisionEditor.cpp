@@ -180,7 +180,7 @@ bool TileCollisionEditor::PromptImportTileset() {
 
 void TileCollisionEditor::Render() {
     if (Tileset) {
-        Graphics::TileImageData = Tileset->TileImageTextures;
+        Graphics::TileImageData = Tileset->TileImageTexture;
         Graphics::TileCollisionImageData = Tileset->TileCollisionTextures;
     }
 

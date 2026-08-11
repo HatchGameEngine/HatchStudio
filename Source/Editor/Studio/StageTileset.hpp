@@ -28,8 +28,8 @@ struct StageTileset {
     const int HATCH_TILESHEET_HEIGHT = HATCH_TILESHEET_COLSIZE * HATCH_TILESIZE;
 
     int TileCount = 0;
-    SDL_Texture* TileImageTextures[4];
-    SDL_Texture* TileCollisionTextures[2 * 4];
+    SDL_Texture* TileImageTexture = NULL;
+    SDL_Texture* TileCollisionTextures[2];
 
     Uint32*      TileImagePixelData = NULL;
 

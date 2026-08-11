@@ -296,7 +296,7 @@ void TileSelector::Render() {
             1 + Columns * TileSpace,
             1 + rows * TileSpace, Color(0x000000, 0xFF));
 
-        SDL_SetTextureColorMod(Tileset->TileCollisionTextures[4 * TileCollisionPlane], 0xFF, 0xFF, 0xFF);
+        SDL_SetTextureColorMod(Tileset->TileCollisionTextures[TileCollisionPlane], 0xFF, 0xFF, 0xFF);
 
         int tileSpc = TileSpace;
         for (int t = 0; t < Tileset->TileCount; t++) {
@@ -307,10 +307,10 @@ void TileSelector::Render() {
 
             UI::Graphics::Renderer::DstRectAdjustment(&dst);
             if (ShowTileGraphics) {
-                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
             }
             if (ShowTileCollision) {
-                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileCollisionTextures[4 * TileCollisionPlane], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileCollisionTextures[TileCollisionPlane], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
             }
         }
 

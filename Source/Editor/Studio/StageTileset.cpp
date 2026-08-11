@@ -30,7 +30,6 @@ StageTileset::StageTileset() {
         memset(&TileCfg[1][i].Collision, 0xFF, sizeof(TileCfg[1][i].Collision));
     }
 
-    memset(TileImageTextures, 0, sizeof(TileImageTextures));
     memset(TileCollisionTextures, 0, sizeof(TileCollisionTextures));
     memset(TileHashes, 0, sizeof(TileHashes));
 
@@ -39,12 +38,10 @@ StageTileset::StageTileset() {
     UpdateTileCollisionTexture_All();
 }
 StageTileset::~StageTileset() {
-    for (int i = 0; i < 4; i++) {
-        if (TileImageTextures[i]) SDL_DestroyTexture(TileImageTextures[i]);
+    if (TileImageTexture) SDL_DestroyTexture(TileImageTexture);
 
-        for (int p = 0; p < 2; p++) {
-            if (TileCollisionTextures[i | p << 2]) SDL_DestroyTexture(TileCollisionTextures[i | p << 2]);
-        }
+    for (int p = 0; p < 2; p++) {
+        if (TileCollisionTextures[p]) SDL_DestroyTexture(TileCollisionTextures[p]);
     }
 
     if (TileImagePixelData)
@@ -198,92 +195,8 @@ bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stamps
 
     TileCount = tile;
 
-    // Flip tiles horizontally
-    tileSrc = &newTilesetImageData[0];
-    tileDst = &newTilesetImageData[MAX_TILE_PIXELS];
-    for (int line = 0; line < 0x1000 * TILE_SIZE; line++) {
-        // int xSrc = 0;
-        // int xDst = TILE_SIZE - 1;
-        // for (; xSrc < TILE_SIZE; ) {
-        //     tileDst[xDst] = tileSrc[xSrc];
-        //     xSrc++;
-        //     xDst--;
-        // }
-
-        // Loop unrolled:
-        tileDst[15] = tileSrc[0];
-        tileDst[14] = tileSrc[1];
-        tileDst[13] = tileSrc[2];
-        tileDst[12] = tileSrc[3];
-        tileDst[11] = tileSrc[4];
-        tileDst[10] = tileSrc[5];
-        tileDst[9] = tileSrc[6];
-        tileDst[8] = tileSrc[7];
-        tileDst[7] = tileSrc[8];
-        tileDst[6] = tileSrc[9];
-        tileDst[5] = tileSrc[10];
-        tileDst[4] = tileSrc[11];
-        tileDst[3] = tileSrc[12];
-        tileDst[2] = tileSrc[13];
-        tileDst[1] = tileSrc[14];
-        tileDst[0] = tileSrc[15];
-        tileSrc += TILE_SIZE; // Move to next line
-        tileDst += TILE_SIZE; // Move to next line
-    }
-
-    // Flip tiles vertically
-    tileSrc = &newTilesetImageData[0];
-    tileDst = &newTilesetImageData[MAX_TILE_PIXELS << 1];
-    for (int tileRow = 0; tileRow < MAX_SHEET_HEIGHT / TILE_SIZE; ) {
-        for (int row = 0, ySrc = 0, yDst = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1); row < TILE_SIZE; row++) {
-            // Copy tile line
-            memcpy(&tileDst[yDst], &tileSrc[ySrc], dstColumnCount * TILE_SIZE * sizeof(Uint32));
-            ySrc += dstColumnCount * TILE_SIZE;
-            yDst -= dstColumnCount * TILE_SIZE;
-        }
-
-        tileSrc += dstColumnCount * TILE_SIZE * TILE_SIZE;
-        tileDst += dstColumnCount * TILE_SIZE * TILE_SIZE;
-        tileRow++;
-    }
-
-    // Flip tiles horizontally & vertically
-    tileSrc = &newTilesetImageData[MAX_TILE_PIXELS << 1];
-    tileDst = &newTilesetImageData[MAX_TILE_PIXELS << 1 | MAX_TILE_PIXELS];
-    for (int line = 0; line < 0x1000 * TILE_SIZE; line++) {
-        // int xSrc = 0;
-        // int xDst = TILE_SIZE - 1;
-        // for (; xSrc < TILE_SIZE; ) {
-        //     tileDst[xDst] = tileSrc[xSrc];
-        //     xSrc++;
-        //     xDst--;
-        // }
-
-        // Loop unrolled:
-        tileDst[15] = tileSrc[0];
-        tileDst[14] = tileSrc[1];
-        tileDst[13] = tileSrc[2];
-        tileDst[12] = tileSrc[3];
-        tileDst[11] = tileSrc[4];
-        tileDst[10] = tileSrc[5];
-        tileDst[9] = tileSrc[6];
-        tileDst[8] = tileSrc[7];
-        tileDst[7] = tileSrc[8];
-        tileDst[6] = tileSrc[9];
-        tileDst[5] = tileSrc[10];
-        tileDst[4] = tileSrc[11];
-        tileDst[3] = tileSrc[12];
-        tileDst[2] = tileSrc[13];
-        tileDst[1] = tileSrc[14];
-        tileDst[0] = tileSrc[15];
-        tileSrc += TILE_SIZE; // Move to next line
-        tileDst += TILE_SIZE; // Move to next line
-    }
-
     // Update tile image data
-    for (int f = 0; f < 4; f++) {
-        Studio::Textures::CreateTextureFromSTBI(&TileImageTextures[f], (Uint8*)&newTilesetImageData[f * MAX_TILE_PIXELS], 1024, 1024);
-    }
+    Studio::Textures::CreateTextureFromSTBI(&TileImageTexture, (Uint8*)newTilesetImageData, 1024, 1024);
 
     // Create the tile remapping array
     for (int oldID = 0; oldID < 0x1000; oldID++) {
@@ -328,10 +241,6 @@ bool StageTileset::Import(CString filename, ArrayList<SavedStamp*>* stampsList) 
     return Import(filenames, stampsList);
 }
 bool StageTileset::Save(CString filename) {
-    int pitch;
-    Uint32* pixels;
-    SDL_Texture* texture = TileImageTextures[0];
-
     stbi_write_png(filename, 1024, 1024, 4, TileImagePixelData, 1024 * 4);
     return true;
 }
@@ -348,19 +257,18 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
     // const int dstColumnBitshift = 6;
 
     const int planeCount = 2;
-    const int orientationCount = 4;
+    // const int orientationCount = 4;
 
-    Uint8* tileCollisionImageData = (Uint8*)calloc(orientationCount * planeCount, MAX_TILE_PIXELS);
+    Uint8* tileCollisionImageData = (Uint8*)calloc(planeCount, MAX_TILE_PIXELS);
     if (!tileCollisionImageData) {
         Diagnostics::SetError("Could not alloc memory for tile collision image data!");
         return false;
     }
 
     for (size_t p = 0; p < planeCount; p++) {
-        Uint8* tileDstStart = &tileCollisionImageData[orientationCount * p * MAX_TILE_PIXELS];
+        Uint8* tileDstStart = &tileCollisionImageData[p * MAX_TILE_PIXELS];
 
         Uint8* tileDst = tileDstStart;
-        const int orientationOffset = MAX_TILE_PIXELS;
         for (int tile = 0; tile < 0x1000; ) {
             EditableTileConfig* tileData = &TileCfg[p][tile];
 
@@ -372,9 +280,6 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
                         auto col = tileData->Collision[ix];
                         if (col != 0xFF && row <= col) {
                             tileDst[yDst + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_X) + yDst + (ix ^ 15)] = 1;
-                            tileDst[(orientationOffset * FLIPXY_Y) + yDstFY + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_XY) + yDstFY + (ix ^ 15)] = 1;
                         }
                     }
                 }
@@ -383,9 +288,6 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
                         auto col = tileData->Collision[ix];
                         if (col != 0xFF && row >= col) {
                             tileDst[yDst + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_X) + yDst + (ix ^ 15)] = 1;
-                            tileDst[(orientationOffset * FLIPXY_Y) + yDstFY + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_XY) + yDstFY + (ix ^ 15)] = 1;
                         }
                     }
                 }
@@ -401,11 +303,11 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
     }
 
     // Convert to textures
-    for (int f = 0; f < orientationCount * planeCount; f++) {
+    for (int f = 0; f < planeCount; f++) {
         if (!TileCollisionTextures[f])
-            Studio::Textures::CreateTextureFromData(&TileCollisionTextures[f], tileCollisionImageData + MAX_TILE_PIXELS * f, collisionImagePalette, dstColumnCount << 4, dstColumnCount << 4);
+            Studio::Textures::CreateTextureFromData(&TileCollisionTextures[f], &tileCollisionImageData[f * MAX_TILE_PIXELS], collisionImagePalette, dstColumnCount << 4, dstColumnCount << 4);
         else
-            Studio::Textures::UpdateTextureFromData(&TileCollisionTextures[f], tileCollisionImageData + MAX_TILE_PIXELS * f, collisionImagePalette, dstColumnCount << 4, dstColumnCount << 4);
+            Studio::Textures::UpdateTextureFromData(&TileCollisionTextures[f], &tileCollisionImageData[f * MAX_TILE_PIXELS], collisionImagePalette, dstColumnCount << 4, dstColumnCount << 4);
     }
 
     free(tileCollisionImageData);
@@ -422,76 +324,58 @@ bool StageTileset::UpdateTileCollisionTexture(int plane, int tileID) {
     // const int dstColumnBitshift = 6;
 
     // const int planeCount = 2;
-    const int orientationCount = 4;
+    // const int orientationCount = 4;
 
     const int MAX_TILE_PIXELS = TILE_SIZE * TILE_SIZE;
 
-    Uint8* tileCollisionImageData = (Uint8*)calloc(orientationCount, MAX_TILE_PIXELS);
+    Uint8* tileCollisionImageData = (Uint8*)calloc(1, MAX_TILE_PIXELS);
     if (!tileCollisionImageData) {
         Diagnostics::SetError("Could not alloc memory for tile collision image data!");
         return false;
     }
 
-    size_t p = plane;
-    {
-        Uint8* tileDstStart = &tileCollisionImageData[0];
+    EditableTileConfig* tileData = &TileCfg[plane][tileID];
 
-        Uint8* tileDst = tileDstStart;
-        const int orientationOffset = MAX_TILE_PIXELS;
-        int tile = tileID;
-        {
-            EditableTileConfig* tileData = &TileCfg[p][tile];
-
-            int yDst = 0;
-            int yDstFY = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1);
-            for (int row = 0; row < TILE_SIZE; row++) {
-                if (tileData->Orientation) {
-                    for (int ix = 0; ix <= 15; ix++) {
-                        auto col = tileData->Collision[ix];
-                        if (col != 0xFF && row <= col) {
-                            tileDst[yDst + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_X) + yDst + (ix ^ 15)] = 1;
-                            tileDst[(orientationOffset * FLIPXY_Y) + yDstFY + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_XY) + yDstFY + (ix ^ 15)] = 1;
-                        }
-                    }
+    int yDst = 0;
+    int yDstFY = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1);
+    for (int row = 0; row < TILE_SIZE; row++) {
+        if (tileData->Orientation) {
+            for (int ix = 0; ix <= 15; ix++) {
+                auto col = tileData->Collision[ix];
+                if (col != 0xFF && row <= col) {
+                    tileCollisionImageData[yDst + ix] = 1;
                 }
-                else {
-                    for (int ix = 0; ix <= 15; ix++) {
-                        auto col = tileData->Collision[ix];
-                        if (col != 0xFF && row >= col) {
-                            tileDst[yDst + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_X) + yDst + (ix ^ 15)] = 1;
-                            tileDst[(orientationOffset * FLIPXY_Y) + yDstFY + ix] = 1;
-                            tileDst[(orientationOffset * FLIPXY_XY) + yDstFY + (ix ^ 15)] = 1;
-                        }
-                    }
-                }
-
-                yDst += dstColumnCount * TILE_SIZE;
-                yDstFY -= dstColumnCount * TILE_SIZE;
             }
         }
+        else {
+            for (int ix = 0; ix <= 15; ix++) {
+                auto col = tileData->Collision[ix];
+                if (col != 0xFF && row >= col) {
+                    tileCollisionImageData[yDst + ix] = 1;
+                }
+            }
+        }
+
+        yDst += dstColumnCount * TILE_SIZE;
+        yDstFY -= dstColumnCount * TILE_SIZE;
     }
 
     // Convert to textures
-    int fStart = (plane) * orientationCount;
     SDL_Rect dstRect = {
         (tileID & (HATCH_TILESHEET_ROWSIZE - 1)) * HATCH_TILESIZE,
         (tileID / HATCH_TILESHEET_ROWSIZE) * HATCH_TILESIZE,
         HATCH_TILESIZE,
         HATCH_TILESIZE,
     };
-    for (int f = fStart; f < (plane + 1) * orientationCount; f++) {
-        if (!TileCollisionTextures[f]) {
-            Diagnostics::SetError("Tile Collision Texture must be created prior to updating an individual tile.");
-            free(tileCollisionImageData);
-            return false;
-        }
-        else {
-            Studio::Textures::UpdateTextureFromData(&TileCollisionTextures[f],
-                tileCollisionImageData + MAX_TILE_PIXELS * (f - fStart), collisionImagePalette, HATCH_TILESIZE, HATCH_TILESIZE, &dstRect);
-        }
+
+    if (!TileCollisionTextures[plane]) {
+        Diagnostics::SetError("Tile Collision Texture must be created prior to updating an individual tile.");
+        free(tileCollisionImageData);
+        return false;
+    }
+    else {
+        Studio::Textures::UpdateTextureFromData(&TileCollisionTextures[plane],
+            tileCollisionImageData, collisionImagePalette, HATCH_TILESIZE, HATCH_TILESIZE, &dstRect);
     }
 
     free(tileCollisionImageData);
@@ -522,7 +406,7 @@ bool StageTileset::LoadTileset_RSDK(CString filename) {
         Uint8* tileDst;
         const int MAX_TILE_PIXELS = 0x1000 * TILE_SIZE * TILE_SIZE;
 
-        Uint8* tileImageData = (Uint8*)malloc(MAX_TILE_PIXELS * 4);
+        Uint8* tileImageData = (Uint8*)malloc(MAX_TILE_PIXELS);
         if (!tileImageData) {
             Diagnostics::SetError("Could not alloc memory for tile image data!");
             return false;
@@ -554,95 +438,11 @@ bool StageTileset::LoadTileset_RSDK(CString filename) {
             tileDst = &tileImageData[(tile & dstColumnMask) * TILE_SIZE + (tile & ~dstColumnMask) * TILE_SIZE * TILE_SIZE];
         }
 
-        // Flip tiles horizontally
-        tileSrc = &tileImageData[0];
-        tileDst = &tileImageData[MAX_TILE_PIXELS];
-        for (int line = 0; line < TileCount * TILE_SIZE; line++) {
-            // int xSrc = 0;
-            // int xDst = TILE_SIZE - 1;
-            // for (; xSrc < TILE_SIZE; ) {
-            //     tileDst[xDst] = tileSrc[xSrc];
-            //     xSrc++;
-            //     xDst--;
-            // }
-
-            // Loop unrolled:
-            tileDst[15] = tileSrc[0];
-            tileDst[14] = tileSrc[1];
-            tileDst[13] = tileSrc[2];
-            tileDst[12] = tileSrc[3];
-            tileDst[11] = tileSrc[4];
-            tileDst[10] = tileSrc[5];
-            tileDst[9] = tileSrc[6];
-            tileDst[8] = tileSrc[7];
-            tileDst[7] = tileSrc[8];
-            tileDst[6] = tileSrc[9];
-            tileDst[5] = tileSrc[10];
-            tileDst[4] = tileSrc[11];
-            tileDst[3] = tileSrc[12];
-            tileDst[2] = tileSrc[13];
-            tileDst[1] = tileSrc[14];
-            tileDst[0] = tileSrc[15];
-            tileSrc += TILE_SIZE; // Move to next line
-            tileDst += TILE_SIZE; // Move to next line
-        }
-
-        // Flip tiles vertically
-        tileSrc = &tileImageData[0];
-        tileDst = &tileImageData[MAX_TILE_PIXELS << 1];
-        for (int tileRow = 0; tileRow < TileCount / dstColumnCount; ) {
-            for (int row = 0, ySrc = 0, yDst = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1); row < TILE_SIZE; row++) {
-                // Copy tile line
-                memcpy(&tileDst[yDst], &tileSrc[ySrc], dstColumnCount * TILE_SIZE * sizeof(Uint8));
-                ySrc += dstColumnCount * TILE_SIZE;
-                yDst -= dstColumnCount * TILE_SIZE;
-            }
-
-            tileSrc += dstColumnCount * TILE_SIZE * TILE_SIZE;
-            tileDst += dstColumnCount * TILE_SIZE * TILE_SIZE;
-            tileRow++;
-        }
-
-        // Flip tiles horizontally & vertically
-        tileSrc = &tileImageData[MAX_TILE_PIXELS << 1];
-        tileDst = &tileImageData[MAX_TILE_PIXELS << 1 | MAX_TILE_PIXELS];
-        for (int line = 0; line < TileCount * TILE_SIZE; line++) {
-            // int xSrc = 0;
-            // int xDst = TILE_SIZE - 1;
-            // for (; xSrc < TILE_SIZE; ) {
-            //     tileDst[xDst] = tileSrc[xSrc];
-            //     xSrc++;
-            //     xDst--;
-            // }
-
-            // Loop unrolled:
-            tileDst[15] = tileSrc[0];
-            tileDst[14] = tileSrc[1];
-            tileDst[13] = tileSrc[2];
-            tileDst[12] = tileSrc[3];
-            tileDst[11] = tileSrc[4];
-            tileDst[10] = tileSrc[5];
-            tileDst[9] = tileSrc[6];
-            tileDst[8] = tileSrc[7];
-            tileDst[7] = tileSrc[8];
-            tileDst[6] = tileSrc[9];
-            tileDst[5] = tileSrc[10];
-            tileDst[4] = tileSrc[11];
-            tileDst[3] = tileSrc[12];
-            tileDst[2] = tileSrc[13];
-            tileDst[1] = tileSrc[14];
-            tileDst[0] = tileSrc[15];
-            tileSrc += TILE_SIZE; // Move to next line
-            tileDst += TILE_SIZE; // Move to next line
-        }
-
-        // Convert to textures
-        for (int f = 0; f < 4; f++) {
-            if (!TileImageTextures[f])
-                Studio::Textures::CreateTextureFromData(&TileImageTextures[f], tileImageData + MAX_TILE_PIXELS * f, image.Palette, dstColumnCount << 4, dstColumnCount << 4);
-            else
-                Studio::Textures::UpdateTextureFromData(&TileImageTextures[f], tileImageData + MAX_TILE_PIXELS * f, image.Palette, dstColumnCount << 4, dstColumnCount << 4);
-        }
+        // Convert to texture
+        if (!TileImageTexture)
+            Studio::Textures::CreateTextureFromData(&TileImageTexture, tileImageData, image.Palette, dstColumnCount << 4, dstColumnCount << 4);
+        else
+            Studio::Textures::UpdateTextureFromData(&TileImageTexture, tileImageData, image.Palette, dstColumnCount << 4, dstColumnCount << 4);
     }
     else {
         return false;
