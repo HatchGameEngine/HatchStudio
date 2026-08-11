@@ -80,6 +80,8 @@ void TileDrawingWidget::MouseSelect(MouseEventArgs* e) {
                     EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
                     int newAngle = Math::ATan(dragPxEnd.X - dragPxStart.X, dragPxEnd.Y - dragPxStart.Y);
 
+                    newAngle = (newAngle + 64) % 256;
+
                     switch (tileCollisionEditor->GetAngleEditSide()) {
                     case 0: tileData->AngleTop = newAngle; break;
                     case 1: tileData->AngleLeft = newAngle; break;
