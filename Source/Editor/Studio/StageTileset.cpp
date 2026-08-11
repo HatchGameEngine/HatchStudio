@@ -505,40 +505,41 @@ bool StageTileset::ReadTileConfig_Hatch(Stream* stream) {
     stream->ReadByte();
     stream->ReadUInt32();
 
-    for (size_t p = 0; p < 2; p++) {
-        for (int i = 0; i < TileCount; i++) {
-            EditableTileConfig* tileConfig = &TileCfg[p][i];
+    for (int i = 0; i < TileCount; i++) {
+        EditableTileConfig* tileConfig = &TileCfg[0][i];
 
-            tileConfig->Orientation = stream->ReadByte();
+        tileConfig->Orientation = stream->ReadByte();
 
-            Uint8 angle = stream->ReadByte();
+        Uint8 angle = stream->ReadByte();
 
-            if (angle == 0xFF) {
-                tileConfig->AngleTop = 0x00; // Top
-                tileConfig->AngleLeft = 0xC0; // Left
-                tileConfig->AngleRight = 0x40; // Right
-                tileConfig->AngleBottom = 0x80; // Bottom
+        if (angle == 0xFF) {
+            tileConfig->AngleTop = 0x00; // Top
+            tileConfig->AngleLeft = 0xC0; // Left
+            tileConfig->AngleRight = 0x40; // Right
+            tileConfig->AngleBottom = 0x80; // Bottom
+        }
+        else {
+            if (tileConfig->Orientation) {
+                tileConfig->AngleTop = 0x00;
+                tileConfig->AngleLeft = angle >= 0x81 && angle <= 0xB6 ? angle : 0xC0;
+                tileConfig->AngleRight = angle >= 0x4A && angle <= 0x7F ? angle : 0x40;
+                tileConfig->AngleBottom = angle;
             }
             else {
-                if (tileConfig->Orientation) {
-                    tileConfig->AngleTop = 0x00;
-                    tileConfig->AngleLeft = angle >= 0x81 && angle <= 0xB6 ? angle : 0xC0;
-                    tileConfig->AngleRight = angle >= 0x4A && angle <= 0x7F ? angle : 0x40;
-                    tileConfig->AngleBottom = angle;
-                }
-                else {
-                    tileConfig->AngleTop = angle;
-                    tileConfig->AngleLeft = angle >= 0xCA && angle <= 0xF6 ? angle : 0xC0;
-                    tileConfig->AngleRight = angle >= 0x0A && angle <= 0x36 ? angle : 0x40;
-                    tileConfig->AngleBottom = 0x80;
-                }
+                tileConfig->AngleTop = angle;
+                tileConfig->AngleLeft = angle >= 0xCA && angle <= 0xF6 ? angle : 0xC0;
+                tileConfig->AngleRight = angle >= 0x0A && angle <= 0x36 ? angle : 0x40;
+                tileConfig->AngleBottom = 0x80;
             }
-
-            bool hasCollision = stream->ReadByte();
-
-            stream->ReadBytes(tileConfig->Collision, tileSize);
         }
+
+        bool hasCollision = stream->ReadByte();
+
+        stream->ReadBytes(tileConfig->Collision, tileSize);
     }
+
+    // Copy over to the other plane
+    memcpy(&TileCfg[1][0], &TileCfg[0][0], TileCount * sizeof(EditableTileConfig));
 
     return true;
 }
