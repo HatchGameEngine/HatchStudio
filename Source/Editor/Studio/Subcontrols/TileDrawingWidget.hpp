@@ -30,6 +30,8 @@ struct TileDrawingWidget : Control {
     Vector2 dragPxStart;
     Vector2 dragPxEnd;
 
+    int TileAngle = 0;
+
     TileDrawingWidget(TileCollisionEditorPanel* tileCollisionEditor);
 
     int GetPlane();
@@ -41,6 +43,7 @@ struct TileDrawingWidget : Control {
     void OnMouseUp(MouseEventArgs* e);
 
     void DrawCheckedRect(int x, int y, int w, int h, int oddMod);
+    void DrawArrow(int x0, int y0, int x1, int y1, Color color);
 
     void Render();
 };

@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 
+#include <cmath>
+
 #include PLATFORM_SETTINGS
 #include <Hatch/Primitives.h>
 #include <Hatch/Types.h>
@@ -151,6 +153,21 @@ void TileDrawingWidget::DrawCheckedRect(int x, int y, int w, int h, int oddMod) 
     UI::Graphics::Renderer::DrawRect(x, y, w, h, white);
 }
 
+void TileDrawingWidget::DrawArrow(int x0, int y0, int x1, int y1, Color color) {
+    const float thickness = 3.0f;
+
+    double angle = atan2(y1 - y0, x1 - x0) + M_PI;
+
+    int x2 = (int)(x1 + 20 * cos(angle - M_PI / 8));
+    int y2 = (int)(y1 + 20 * sin(angle - M_PI / 8));
+    int x3 = (int)(x1 + 20 * cos(angle + M_PI / 8));
+    int y3 = (int)(y1 + 20 * sin(angle + M_PI / 8));
+
+    UI::Graphics::Renderer::DrawLine(x1, y1, x0, y0, color, thickness);
+    UI::Graphics::Renderer::DrawLine(x1, y1, x2, y2, color, thickness);
+    UI::Graphics::Renderer::DrawLine(x1, y1, x3, y3, color, thickness);
+}
+
 void TileDrawingWidget::Render() {
     auto bounds = GetScreenRect();
 
@@ -160,6 +177,7 @@ void TileDrawingWidget::Render() {
     const Color white = Color(0xFFFFFF, 0xFF);
     TileSelector* tileSelector = tileCollisionEditor->tileSelector;
     bool showGrid = tileCollisionEditor->checkBoxShowGrid->GetChecked();
+    bool showArrow = tileCollisionEditor->checkBoxShowAngle->GetChecked();
 
     int p = GetPlane();
 
@@ -208,9 +226,20 @@ void TileDrawingWidget::Render() {
                         UI::Graphics::Renderer::StrokeRect(bounds.x + column * pxSz - 1, bounds.y, 1, bounds.h, gridColor);
                     }
                 }
+
+                if (showArrow) {
+                    double realAngle = TileAngle * M_PI / 128;
+
+                    DrawArrow(
+                        bounds.x + (bounds.w / 2),
+                        bounds.y + (bounds.h / 2),
+                        bounds.x + (int)(bounds.w / 2 + sin(realAngle) * bounds.w / 2),
+                        bounds.y + (int)(bounds.h / 2 - cos(realAngle) * bounds.h / 2),
+                        Color(0xFF0000, 0xFF));
+                }
             }
             else {
-                UI::Graphics::Renderer::DrawLine(
+                DrawArrow(
                     bounds.x + dragPxStart.X, bounds.y + dragPxStart.Y,
                     bounds.x + dragPxEnd.X, bounds.y + dragPxEnd.Y, Color(0xFF0000, 0xFF));
             }

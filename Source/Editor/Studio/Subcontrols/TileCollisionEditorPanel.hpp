@@ -53,6 +53,7 @@ struct TileCollisionEditorPanel : Panel {
     Label* labelBehaviorFlag = NULL;
     NumericUpDown* numericUpDownBoxBehaviorFlag = NULL;
     CheckBox* checkBoxShowGrid = NULL;
+    CheckBox* checkBoxShowAngle = NULL;
 
     // These are not allocated, do not 'delete'!
     RadioButton* SelectionGroup1 = NULL;
@@ -65,7 +66,8 @@ struct TileCollisionEditorPanel : Panel {
     void SetTileset(StageTileset* tileset);
 
     void UpdateAngleLabel(int newAngle);
-	void UpdateTileInfoUI();
+    void UpdateTileDrawingWidgetArrowAngle(int newAngle);
+    void UpdateTileInfoUI();
 
     int GetAngleEditSide();
 

@@ -41,6 +41,7 @@ namespace UI::Graphics::Renderer {
 
     void SetDrawColor(Color color);
     void DrawLine(int x1, int y1, int x2, int y2, Color color);
+    void DrawLine(int x1, int y1, int x2, int y2, Color color, float thickness);
     void DrawRect(SDL_Rect* rect, Color color);
     void DrawRect(int x, int y, int w, int h, Color color);
     void StrokeRect(SDL_Rect* rect, Color color);

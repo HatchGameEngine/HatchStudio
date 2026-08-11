@@ -79,6 +79,56 @@ namespace UI::Graphics::Renderer {
         y2 *= rendererScaleI;
         SDL_RenderDrawLine(Renderer, x1, y1, x2, y2);
     }
+    void DrawLine(int x1, int y1, int x2, int y2, Color color, float thickness) {
+        if (thickness <= 0.0) {
+            return;
+        }
+
+        // Code taken from SDL2_gfx
+        double dx, dy, dx1, dy1, dx2, dy2;
+        double l, wl2, nx, ny, ang, adj;
+        SDL_Vertex verts[4];
+        const int indices[6] = { 0, 1, 2, 2, 3, 0 };
+
+        // Calculate offsets for sides
+        dx = (double)(x2 - x1);
+        dy = (double)(y2 - y1);
+        l = SDL_sqrt(dx*dx + dy*dy);
+        ang = SDL_atan2(dx, dy);
+        adj = 0.1 + 0.9 * SDL_fabs(SDL_cos(2.0 * ang));
+        wl2 = ((double)thickness - adj)/(2.0 * l);
+        nx = dx * wl2;
+        ny = dy * wl2;
+
+        // Build polygon
+        dx1 = (double)x1;
+        dy1 = (double)y1;
+        dx2 = (double)x2;
+        dy2 = (double)y2;
+
+        verts[0] = {
+            SDL_FPoint{(float)(dx1 + ny) * rendererScaleF, (float)(dy1 - nx) * rendererScaleF},
+            SDL_Color{color.R, color.G, color.B, color.A},
+            SDL_FPoint{0}
+        };
+        verts[1] = {
+            SDL_FPoint{(float)(dx1 - ny) * rendererScaleF, (float)(dy1 + nx) * rendererScaleF},
+            SDL_Color{color.R, color.G, color.B, color.A},
+            SDL_FPoint{0}
+        };
+        verts[2] = {
+            SDL_FPoint{(float)(dx2 - ny) * rendererScaleF, (float)(dy2 + nx) * rendererScaleF},
+            SDL_Color{color.R, color.G, color.B, color.A},
+            SDL_FPoint{0}
+        };
+        verts[3] = {
+            SDL_FPoint{(float)(dx2 + ny) * rendererScaleF, (float)(dy2 - nx) * rendererScaleF},
+            SDL_Color{color.R, color.G, color.B, color.A},
+            SDL_FPoint{0}
+        };
+
+        SDL_RenderGeometry(Renderer, NULL, verts, 4, indices, 6);
+    }
     void DrawRect(SDL_Rect* rect, Color color) {
         SetDrawColor(color);
 

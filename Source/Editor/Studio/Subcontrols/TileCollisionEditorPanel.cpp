@@ -195,6 +195,14 @@ void TileCollisionEditorPanel::Init() {
     checkBoxShowGrid->Padding.Left = 8;
     splitter->Panel2->Controls.Add(checkBoxShowGrid);
 
+    checkBoxShowAngle = new CheckBox("Show Angle:");
+    checkBoxShowAngle->CheckState = CheckState::Unchecked;
+    checkBoxShowAngle->Location = { numericUpDownBoxBehaviorFlag->Location.X, checkBoxShowGrid->Location.Y + 20 };
+    checkBoxShowAngle->CheckAlign = TEXT_ALIGN_RIGHT | TEXT_VALIGN_MIDDLE;
+    checkBoxShowAngle->Padding = 0;
+    checkBoxShowAngle->Padding.Left = 8;
+    splitter->Panel2->Controls.Add(checkBoxShowAngle);
+
     ///
     splitter->Panel2MinSize = tilePreviewWindow->Location.Y + tilePreviewWindow->Size.Get().H + 8;
 
@@ -241,6 +249,7 @@ TileCollisionEditorPanel::~TileCollisionEditorPanel() {
     delete labelBehaviorFlag;
     delete numericUpDownBoxBehaviorFlag;
     delete checkBoxShowGrid;
+    delete checkBoxShowAngle;
 }
 
 void TileCollisionEditorPanel::SetTileset(StageTileset* tileset) {
@@ -255,6 +264,9 @@ void TileCollisionEditorPanel::UpdateAngleLabel(int newAngle) {
     int newAngleDeg = (int)(newAngle * 360.0 / radialKnobAngle->MaxAngle);
     snprintf(textBuffer, 255, "Angle:  %d degrees (0x%02X)", newAngleDeg, newAngle);
     labelRawAngleValue->SetText(textBuffer);
+}
+void TileCollisionEditorPanel::UpdateTileDrawingWidgetArrowAngle(int newAngle) {
+    tilePreviewWindow->TileAngle = newAngle;
 }
 void TileCollisionEditorPanel::UpdateTileInfoUI() {
 	if (tileSelector->SelectedTileID < 0)
@@ -281,6 +293,8 @@ void TileCollisionEditorPanel::UpdateTileInfoUI() {
     radialKnobAngle->CanRaiseEvents = false;
 	radialKnobAngle->Angle = newAngle;
     radialKnobAngle->CanRaiseEvents = true;
+
+    tilePreviewWindow->TileAngle = newAngle;
 
     numericUpDownBoxBehaviorFlag->CanRaiseEvents = false;
     numericUpDownBoxBehaviorFlag->Value = tileData->Behavior;
@@ -501,4 +515,5 @@ void TileCollisionEditorPanel::radialKnobAngle_onValueChanged(void* sender, Dial
 }
 void TileCollisionEditorPanel::radialKnobAngle_onDialTurn(void* sender, DialTurnedArgs* args) {
     UpdateAngleLabel(args->Value);
+    UpdateTileDrawingWidgetArrowAngle(args->Value);
 }
