@@ -85,6 +85,8 @@ void TileDrawingWidget::MouseSelect(MouseEventArgs* e) {
                     case 3: tileData->AngleBottom = newAngle; break;
                     }
                 }
+
+                tileCollisionEditor->UpdateTileInfoUI();
             }
         }
     }
