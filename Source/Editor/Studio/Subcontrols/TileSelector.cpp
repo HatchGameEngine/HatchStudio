@@ -21,8 +21,8 @@
 
 #include <Studio/Subcontrols/TileSelector.hpp>
 
-TileSelector::TileSelector(Stage* stage) : Panel() {
-    LinkedStage = stage;
+TileSelector::TileSelector(StageTileset* tileset) : Panel() {
+    Tileset = tileset;
 
     Margin = 1;
     Padding = 7;
@@ -40,10 +40,14 @@ TileSelector::TileSelector(Stage* stage) : Panel() {
     Strings::FromCString(&DefaultTextLine2, "To Get Started!", 0);
 }
 
+void TileSelector::SetTileset(StageTileset* tileset) {
+    Tileset = tileset;
+}
+
 void TileSelector::OnMouseDown(MouseEventArgs* e) {
     Control::OnMouseDown(e);
 
-    if (e->Button == SDL_BUTTON(SDL_BUTTON_LEFT) && CaptureMouse()) {
+    if (Tileset && e->Button == SDL_BUTTON(SDL_BUTTON_LEFT) && CaptureMouse()) {
         Position windowPos = GetPositionInWindowCoords();
 
         int mx = e->X, my = e->Y;
@@ -56,7 +60,7 @@ void TileSelector::OnMouseDown(MouseEventArgs* e) {
             my >= 0 &&
             mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
             my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-            int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, LinkedStage->TileCount);
+            int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, Tileset->TileCount);
             SelectRange(tileIndex, tileIndex);
             Select(tileIndex);
         }
@@ -65,7 +69,7 @@ void TileSelector::OnMouseDown(MouseEventArgs* e) {
 void TileSelector::OnMouseMove(MouseEventArgs* e) {
     Control::OnMouseMove(e);
 
-    if (e->Button == SDL_BUTTON(SDL_BUTTON_LEFT) && MouseCaptured == this) {
+    if (Tileset && e->Button == SDL_BUTTON(SDL_BUTTON_LEFT) && MouseCaptured == this) {
         RequestUpdatedBounds();
 
         Position windowPos = GetPositionInWindowCoords();
@@ -80,7 +84,7 @@ void TileSelector::OnMouseMove(MouseEventArgs* e) {
             my >= 0 &&
             mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
             my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-            int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, LinkedStage->TileCount);
+            int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, Tileset->TileCount);
             SelectRange(SelectedTileRange_Start, tileIndex);
             Select(tileIndex);
         }
@@ -93,7 +97,7 @@ void TileSelector::OnMouseUp(MouseEventArgs* e) {
 }
 
 void TileSelector::RequestUpdatedBounds() {
-    if (!LinkedStage)
+    if (!Tileset)
         return;
 
     auto Bounds = GetScreenRect();
@@ -106,12 +110,12 @@ void TileSelector::RequestUpdatedBounds() {
     ContentBounds.x = 0;
     ContentBounds.y = 0;
     ContentBounds.w = TileSpace * Columns - Margin.Left + Padding.Horizontal();
-    ContentBounds.h = TileSpace * ((LinkedStage->TileCount + (Columns - 1)) / Columns) - Margin.Left + Padding.Vertical();
+    ContentBounds.h = TileSpace * ((Tileset->TileCount + (Columns - 1)) / Columns) - Margin.Left + Padding.Vertical();
 
     // Bounds.w = ContentBounds.w + VScrollControl->Bounds.w;
 }
 void TileSelector::ResizeChildren() {
-    HideEmptyVScroll = !LinkedStage || LinkedStage->TileCount == 0;
+    HideEmptyVScroll = !Tileset || Tileset->TileCount == 0;
 
     RequestUpdatedBounds();
 
@@ -149,7 +153,7 @@ void TileSelector::GetHighlightBounds(int* start, int* end) {
     *end = M_MAX(SelectedTileRange_Start, SelectedTileRange_End);
 }
 bool TileSelector::IsCellWithinHighlight(int x, int y) {
-    int tCount = LinkedStage->TileCount;
+    int tCount = Tileset->TileCount;
     int xCount = Columns;
     int yCount = (tCount + xCount - 1) / xCount;
 
@@ -263,12 +267,9 @@ void TileSelector::SelectRange(int start, int end) {
 void TileSelector::Render() {
     Panel::Render();
 
-    if (!LinkedStage)
-        return;
-
     auto Bounds = GetScreenRect();
 
-    if (LinkedStage->TileCount == 0) {
+    if (!Tileset || Tileset->TileCount == 0) {
         ::Size lineSz1, lineSz2;
         UI::Graphics::Font::Face* Typeface = UI::Graphics::Font::Arial[12];
         UI::Graphics::Renderer::MeasureFont(&DefaultTextLine1, Typeface, &lineSz1.W, &lineSz1.H);
@@ -285,7 +286,7 @@ void TileSelector::Render() {
         const int columnCount = 64;
         const int columnBitshift = 6;
 
-        int rows = TileIndexToRow(LinkedStage->TileCount + Columns - 1);
+        int rows = TileIndexToRow(Tileset->TileCount + Columns - 1);
         if (rows < 1)
             rows = 1;
 
@@ -295,10 +296,10 @@ void TileSelector::Render() {
             1 + Columns * TileSpace,
             1 + rows * TileSpace, Color(0x000000, 0xFF));
 
-        SDL_SetTextureColorMod(LinkedStage->TileCollisionTextures[4 * TileCollisionPlane], 0xFF, 0xFF, 0xFF);
+        SDL_SetTextureColorMod(Tileset->TileCollisionTextures[4 * TileCollisionPlane], 0xFF, 0xFF, 0xFF);
 
         int tileSpc = TileSpace;
-        for (int t = 0; t < LinkedStage->TileCount; t++) {
+        for (int t = 0; t < Tileset->TileCount; t++) {
             int tX = Padding.Left + TileIndexToColumn(t) * tileSpc;
             int tY = Padding.Top + TileIndexToRow(t) * tileSpc - VScrollControl->Value;
             SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
@@ -306,10 +307,10 @@ void TileSelector::Render() {
 
             UI::Graphics::Renderer::DstRectAdjustment(&dst);
             if (ShowTileGraphics) {
-                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, LinkedStage->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
             }
             if (ShowTileCollision) {
-                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, LinkedStage->TileCollisionTextures[4 * TileCollisionPlane], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileCollisionTextures[4 * TileCollisionPlane], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
             }
         }
 

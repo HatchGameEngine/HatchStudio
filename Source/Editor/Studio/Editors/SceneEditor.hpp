@@ -20,7 +20,9 @@
 
 #include <vector>
 
+#include <Studio/Enums.hpp>
 #include <Studio/Impl.hpp>
+#include <Studio/Stamp.hpp>
 #include <Studio/Structs.hpp>
 
 #include <UI/Graphics/Font.hpp>
@@ -61,273 +63,6 @@ struct SceneEditor : Studio::ResourceEditor {
     #pragma endregion
 
     #pragma region Structures
-    struct Stamp {
-        int Width;
-        int Height;
-        Tile Data[];
-
-        static Stamp* FromLayer(SceneEditor* scene, int layerIndex, int x, int y, int w, int h) {
-            Layer* layer = &scene->Layers[layerIndex];
-
-            // Bound limits, but don't bound yourself
-            if (x < 0) {
-                w += x;
-                x = 0;
-            }
-            if (y < 0) {
-                h += y;
-                y = 0;
-            }
-            w = M_MIN(w, (int)layer->Width - x);
-            h = M_MIN(h, (int)layer->Height - y);
-
-            if (!w || !h)
-                return NULL;
-
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileRow = &layer->Tiles[x + (y << layer->WidthInBits)];
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = tileRow[tx];
-                }
-                tileRow += layer->DataWidth;
-            }
-
-            return stamp;
-        }
-        static void   ToLayer(Stamp* stamp, SceneEditor* scene, int layerIndex, int x, int y, bool doEmptyTileWrite) {
-            int w = stamp->Width, h = stamp->Height;
-            Layer* layer = &scene->Layers[layerIndex];
-
-            int srcx = 0;
-            int srcy = 0;
-
-            // Bound limits
-            if (x < 0) {
-                srcx = -x;
-                w -= srcx;
-                x = 0;
-            }
-            if (y < 0) {
-                srcy = -y;
-                h -= srcy;
-                y = 0;
-            }
-            w = M_MIN(w, (int)layer->Width - x);
-            h = M_MIN(h, (int)layer->Height - y);
-
-            if (!w || !h)
-                return;
-
-            Tile* tileRow = &layer->Tiles[x + (y << layer->WidthInBits)];
-            Tile* tileSrc = &stamp->Data[srcx + (srcy * stamp->Width)];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    if (*tileSrc != TILE_EMPTY || doEmptyTileWrite)
-                        tileRow[tx] = *tileSrc;
-                    tileSrc++;
-                }
-                tileSrc += stamp->Width - w;
-                tileRow += layer->DataWidth;
-            }
-        }
-
-        static Stamp* Clone(Stamp* stamp) {
-            Stamp* stampNew = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * stamp->Width * stamp->Height);
-            if (!stampNew)
-                return NULL;
-
-            memcpy(stampNew, stamp, sizeof(Stamp) + sizeof(Tile) * stamp->Width * stamp->Height);
-            return stampNew;
-        }
-        static Stamp* FromRepeatTile(Tile tile, int w, int h) {
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = tile;
-                }
-            }
-
-            return stamp;
-        }
-        static Stamp* FromTileArray(Tile* tile, int w, int h) {
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = *(tile++);
-                }
-            }
-
-            return stamp;
-        }
-        static Stamp* CreateEmpty(int w, int h) {
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = TILE_EMPTY;
-                }
-            }
-
-            return stamp;
-        }
-
-        static Stamp* FromStampFlipped(Stamp* stamp, bool flipHorizontal, bool flipVertical) {
-            Stamp* stampNew = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * stamp->Width * stamp->Height);
-            if (!stampNew)
-                return NULL;
-
-            Tile* tileDst = &stampNew->Data[0];
-            if (flipHorizontal && flipVertical) {
-                Tile* tileSrcRow = &stamp->Data[stamp->Width * (stamp->Height - 1)];
-                for (int row = 0; row < stamp->Height; row++) {
-                    Tile* tileSrc = &tileSrcRow[stamp->Width - 1];
-                    for (int col = 0; col < stamp->Width; col++) {
-                        *tileDst = *tileSrc;
-                        if (*tileDst != TILE_EMPTY) {
-                            tileDst->FlipX ^= 1;
-                            tileDst->FlipY ^= 1;
-                        }
-                        tileDst++;
-                        tileSrc--;
-                    }
-                    tileSrcRow -= stamp->Width;
-                }
-            }
-            else if (flipHorizontal) {
-                Tile* tileSrcRow = &stamp->Data[0];
-                for (int row = 0; row < stamp->Height; row++) {
-                    Tile* tileSrc = &tileSrcRow[stamp->Width - 1];
-                    for (int col = 0; col < stamp->Width; col++) {
-                        *tileDst = *tileSrc;
-                        if (*tileDst != TILE_EMPTY) {
-                            tileDst->FlipX ^= 1;
-                        }
-                        tileDst++;
-                        tileSrc--;
-                    }
-                    tileSrcRow += stamp->Width;
-                }
-            }
-            else if (flipVertical) {
-                Tile* tileSrcRow = &stamp->Data[stamp->Width * (stamp->Height - 1)];
-                for (int row = 0; row < stamp->Height; row++) {
-                    Tile* tileSrc = &tileSrcRow[0];
-                    for (int col = 0; col < stamp->Width; col++) {
-                        *tileDst = *tileSrc;
-                        if (*tileDst != TILE_EMPTY) {
-                            tileDst->FlipY ^= 1;
-                        }
-                        tileDst++;
-                        tileSrc++;
-                    }
-                    tileSrcRow -= stamp->Width;
-                }
-            }
-
-            memcpy(stampNew, stamp, sizeof(Stamp));
-            return stampNew;
-        }
-
-        static Stamp* FromStreamRead(Stream* stream) {
-            // Read size
-            int width = stream->ReadUInt16();
-            int height = stream->ReadUInt16();
-
-            // Create stamp
-            Stamp* Data = Stamp::CreateEmpty(width, height);
-
-            // Read tile data
-            // Uint32 dataRead =
-			stream->ReadCompressed(&Data->Data[0]);
-            /*if (dataRead == width * height * sizeof(Tile))
-                printf("perfect stamp tile data read!");
-            else
-                printf("invalid stamp tile data read!");*/
-
-            return Data;
-        }
-        void Write(Stream* stream) {
-            // Write size
-            stream->WriteUInt16(this->Width);
-            stream->WriteUInt16(this->Height);
-
-            // Write tile data
-            stream->WriteCompressed(&this->Data[0], this->Width * this->Height * sizeof(Tile));
-        }
-    };
-    struct SavedStamp {
-        String Title;
-        Stamp* Data;
-
-        void Read(Stream* stream) {
-            char title[256];
-
-            // Read magic
-            Uint32 magic = stream->ReadUInt32();
-
-            // Read title
-            stream->ReadHeaderedString(title);
-            Strings::FromCString(&Title, title, 0);
-
-            Data = Stamp::FromStreamRead(stream);
-        }
-        void Write(Stream* stream) {
-            char title[256];
-
-            // Write magic
-            stream->WriteUInt32(0x00000000);
-
-            // Write title
-            if (Title.Length > 255)
-                Title.Length = 255;
-            Strings::ToCString(title, &Title);
-            stream->WriteHeaderedString(title);
-
-            Data->Write(stream);
-        }
-
-        ~SavedStamp() {
-            free(Data);
-        }
-    };
     struct Version {
         Uint8 major;
         Uint8 minor;
@@ -353,7 +88,7 @@ struct SceneEditor : Studio::ResourceEditor {
             _tileX = x;
             _tileY = y;
             _toStamp = toStamp;
-            _originalData = Stamp::FromLayer(scene, layerIndex, x, y, toStamp->Width, toStamp->Height);
+            _originalData = Stamp::FromLayer(&scene->Layers[layerIndex], x, y, toStamp->Width, toStamp->Height);
             _replace = replace;
 
             IsDataChange = true;
@@ -364,10 +99,10 @@ struct SceneEditor : Studio::ResourceEditor {
         }
 
         void Do() {
-            Stamp::ToLayer(_toStamp, _scene, _layer, _tileX, _tileY, _replace);
+            Stamp::ToLayer(_toStamp, &_scene->Layers[_layer], _tileX, _tileY, _replace);
         }
         void Undo() {
-            Stamp::ToLayer(_originalData, _scene, _layer, _tileX, _tileY, true);
+            Stamp::ToLayer(_originalData, &_scene->Layers[_layer], _tileX, _tileY, true);
         }
         void Read(Stream* stream) {
             // NOTE: values are slightly out of order to promote
@@ -1035,7 +770,7 @@ struct SceneEditor : Studio::ResourceEditor {
                             Bounds.y + tY + (Bounds.h - CurrentStamp->Height * TILE_SIZE) / 2, TILE_SIZE, TILE_SIZE };
 
                         UI::Graphics::Renderer::DstRectAdjustment(&dst);
-                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->TileImageTextures[tile->FlipY << 1 | tile->FlipX], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->Tileset.TileImageTextures[tile->FlipY << 1 | tile->FlipX], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
                     }
 
                     ClipEnd(&buffer);
@@ -1282,8 +1017,8 @@ struct SceneEditor : Studio::ResourceEditor {
                 if (result == DialogResult::OK) {
                     char stringBuffer[256];
                     Strings::ToCString(stringBuffer, &dialog->textBoxName->Text);
-                    Editor->StampCollectionAdd(stringBuffer, Stamp::FromLayer(Editor,
-                        Editor->tilePlacementField->CurrentLayer, tileSelBounds.x, tileSelBounds.y, tileSelBounds.w, tileSelBounds.h));
+                    Editor->StampCollectionAdd(stringBuffer, Stamp::FromLayer(&Editor->Layers[Editor->tilePlacementField->CurrentLayer],
+                        tileSelBounds.x, tileSelBounds.y, tileSelBounds.w, tileSelBounds.h));
                 }
             });
         }
@@ -2403,7 +2138,7 @@ struct SceneEditor : Studio::ResourceEditor {
                 if (c_this->Editor->PromptImportTileset()) {
                     // Prompt to "Remap All Tiles?" "Remap all tiles in every layer?\n\nThis action cannot be undone. (Don't show me this again.)"
                     c_this->Editor->tilePlacementField->RemapStampDataToBePlaced();
-                    c_this->Editor->LinkedStage->RemapTileConfig();
+                    c_this->Editor->LinkedStage->Tileset.RemapTileConfig();
                     c_this->Editor->LayerRemapAllTiles();
                 }
             });
@@ -2520,7 +2255,7 @@ struct SceneEditor : Studio::ResourceEditor {
 
             if (w > 0 && h > 0) {
                 delete StampDataToBePlaced;
-                StampDataToBePlaced = Stamp::FromLayer(Editor, CurrentLayer, TileSelectBounds.x, TileSelectBounds.y, w, h);
+                StampDataToBePlaced = Stamp::FromLayer(&Editor->Layers[CurrentLayer], TileSelectBounds.x, TileSelectBounds.y, w, h);
             }
         }
         void Action_SelectSingularEntity(int slot) {
@@ -2679,7 +2414,7 @@ struct SceneEditor : Studio::ResourceEditor {
             else if ((e->Modifier & KMOD_CTRL))
                 collisionValue = Graphics::SOLID_FALLTHROUGH;
 
-            Stamp* stamp = Stamp::FromLayer(Editor, layerIndex, x, y, 1, 1);
+            Stamp* stamp = Stamp::FromLayer(&Editor->Layers[layerIndex], x, y, 1, 1);
             if (clear) {
                 for (int i = 0; i < stamp->Width * stamp->Height; i++) {
                     if (stamp->Data[i] == TILE_EMPTY) continue;
@@ -2728,7 +2463,7 @@ struct SceneEditor : Studio::ResourceEditor {
             else if ((e->Modifier & KMOD_CTRL))
                 collisionValue = Graphics::SOLID_FALLTHROUGH;
 
-            Stamp* stamp = Stamp::FromLayer(Editor, layerIndex, x, y, w, h);
+            Stamp* stamp = Stamp::FromLayer(&Editor->Layers[layerIndex], x, y, w, h);
             if (clear) {
                 for (int i = 0; i < stamp->Width * stamp->Height; i++) {
                     if (stamp->Data[i] == TILE_EMPTY) continue;
@@ -3255,7 +2990,7 @@ struct SceneEditor : Studio::ResourceEditor {
                     if (tileRow[col] == TILE_EMPTY)
                         continue;
 
-                    int newID = Editor->LinkedStage->TileRemapArray[tileRow[col].ID];
+                    int newID = Editor->LinkedStage->Tileset.TileRemapArray[tileRow[col].ID];
                     if (newID == -1)
                         tileRow[col] = TILE_EMPTY;
                     else
@@ -4479,6 +4214,8 @@ struct SceneEditor : Studio::ResourceEditor {
 
     bool Open();
     bool Save();
+
+    static ResourceFileType GetFileType(Stream* stream);
 
     int GetEditorType();
 

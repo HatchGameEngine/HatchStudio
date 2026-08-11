@@ -27,9 +27,7 @@ struct SceneEditor;
 
 struct TileCollisionEditorPanel : Panel {
     SceneEditor* Editor = NULL;
-    Stage* LinkedStage = NULL;
-    Stage::EditableTileConfig (*TileCfg)[0x1000 << 2] = NULL;
-    Uint32* TileImagePixelData = NULL;
+    StageTileset* Tileset = NULL;
 
     TileSelector* tileSelector = NULL;
     SplitContainer* splitter = NULL;
@@ -61,10 +59,10 @@ struct TileCollisionEditorPanel : Panel {
     RadioButton* SelectionGroup2 = NULL;
 
     TileCollisionEditorPanel(SceneEditor* editor);
-    TileCollisionEditorPanel(Stage::EditableTileConfig (*tileCfg)[0x1000 << 2], Uint32* tileImagePixelData);
+    TileCollisionEditorPanel(StageTileset* tileset);
     ~TileCollisionEditorPanel();
 
-    void SetStage(Stage* stage);
+    void SetTileset(StageTileset* tileset);
 
     void UpdateAngleLabel(int newAngle);
 	void UpdateTileInfoUI();

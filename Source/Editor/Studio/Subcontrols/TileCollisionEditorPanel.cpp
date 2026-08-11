@@ -40,7 +40,7 @@ void TileCollisionEditorPanel::Init() {
     splitter->SplitterDistance = 2000;
     Controls.Add(splitter);
 
-    tileSelector = new TileSelector(LinkedStage);
+    tileSelector = new TileSelector(Tileset);
     tileSelector->ShowTileCollision = true;
     tileSelector->onSelectedTileIDChanged += std::bind(&TileCollisionEditorPanel::tileSelector_onSelectedTileIDChanged, this, std::placeholders::_1, std::placeholders::_2);
     splitter->Panel1->Controls.Add(tileSelector);
@@ -136,11 +136,11 @@ void TileCollisionEditorPanel::Init() {
     splitter->Panel2->Controls.Add(labelAutoCollision);
 
     buttonSetCollisionForSelectedRange = new Button("Set Collision For Selected Range");
-    // buttonSetCollisionForSelectedRange->Anchor = ANCHOR_LEFT;
     buttonSetCollisionForSelectedRange->Location = { 8, labelAutoCollision->Location.Y + 25 };
     buttonSetCollisionForSelectedRange->Margin.Top = 4;
     buttonSetCollisionForSelectedRange->Size = { 200, 25 };
     buttonSetCollisionForSelectedRange->onMouseClick += std::bind(&TileCollisionEditorPanel::buttonSetCollisionForSelectedRange_onMouseClick, this, std::placeholders::_1, std::placeholders::_2);
+    buttonSetCollisionForSelectedRange->Enabled = false;
     splitter->Panel2->Controls.Add(buttonSetCollisionForSelectedRange);
 
     labelAutoCollisionNote = new Label("*sets the values based on the tile image.");
@@ -205,15 +205,14 @@ void TileCollisionEditorPanel::Init() {
 
 TileCollisionEditorPanel::TileCollisionEditorPanel(SceneEditor* editor) : Panel() {
     Editor = editor;
-    LinkedStage = Editor->LinkedStage;
-    TileCfg = LinkedStage != NULL ? LinkedStage->TileCfg : NULL;
-    TileImagePixelData = LinkedStage != NULL ? LinkedStage->TileImagePixelData : NULL;
+    if (Editor->LinkedStage) {
+        Tileset = &Editor->LinkedStage->Tileset;
+    }
 
     Init();
 }
-TileCollisionEditorPanel::TileCollisionEditorPanel(Stage::EditableTileConfig (*tileCfg)[0x1000 << 2], Uint32* tileImagePixelData) : Panel() {
-    TileCfg = tileCfg;
-    TileImagePixelData = tileImagePixelData;
+TileCollisionEditorPanel::TileCollisionEditorPanel(StageTileset* tileset) : Panel() {
+    Tileset = tileset;
 
     Init();
 }
@@ -244,12 +243,11 @@ TileCollisionEditorPanel::~TileCollisionEditorPanel() {
     delete checkBoxShowGrid;
 }
 
-void TileCollisionEditorPanel::SetStage(Stage* stage) {
-    LinkedStage = stage;
-    TileCfg = LinkedStage != NULL ? stage->TileCfg : NULL;
-    TileImagePixelData = LinkedStage != NULL ? stage->TileImagePixelData : NULL;
+void TileCollisionEditorPanel::SetTileset(StageTileset* tileset) {
+    Tileset = tileset;
 
-    tileSelector->LinkedStage = stage;
+    tileSelector->SetTileset(Tileset);
+    tilePreviewWindow->Tileset = Tileset;
 }
 
 void TileCollisionEditorPanel::UpdateAngleLabel(int newAngle) {
@@ -261,12 +259,12 @@ void TileCollisionEditorPanel::UpdateAngleLabel(int newAngle) {
 void TileCollisionEditorPanel::UpdateTileInfoUI() {
 	if (tileSelector->SelectedTileID < 0)
 		return;
-    if (!TileCfg)
+    if (!Tileset)
         return;
 
 	int p = tilePreviewWindow->GetPlane();
 	int t = tileSelector->SelectedTileID;
-    Stage::EditableTileConfig* tileData = &TileCfg[p][t];
+    EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
 
 	int newAngle = -1;
     switch (GetAngleEditSide()) {
@@ -304,11 +302,11 @@ int TileCollisionEditorPanel::GetAngleEditSide() {
 }
 
 void TileCollisionEditorPanel::DoAutoTile(int i) {
-    if (TileImagePixelData == NULL || TileCfg == NULL)
+    if (!Tileset || Tileset->TileImagePixelData == NULL)
         return;
 
     int p = tilePreviewWindow->GetPlane();
-    Stage::EditableTileConfig* tileData = &TileCfg[p][i];
+    EditableTileConfig* tileData = &Tileset->TileCfg[p][i];
 
     int tileSize = 16;
     int columnCount = 64;
@@ -318,7 +316,7 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     int tileImageY = (i / columnCount) * tileSize;
     bool isCeiling = false;
     bool hasCollision = true;
-    Uint32* pxData = TileImagePixelData;
+    Uint32* pxData = Tileset->TileImagePixelData;
 
     // Determine whether is ceiling or not.
     int topCount = 0;
@@ -406,8 +404,8 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
         tileData->AngleTop = (angle + 2) & 0xFC;
     }
 
-    if (LinkedStage) {
-        LinkedStage->UpdateTileCollisionTexture(p, i);
+    if (Tileset) {
+        Tileset->UpdateTileCollisionTexture(p, i);
     }
     if (Editor) {
         Editor->tilePlacementField->UpdateRenderTarget = true;
@@ -416,8 +414,6 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
 
 void TileCollisionEditorPanel::buttonSetCollisionForSelectedRange_onMouseClick(void* sender, MouseEventArgs* e) {
     if (tileSelector->SelectedTileID < 0)
-        return;
-    if (!LinkedStage)
         return;
 
     int p = tilePreviewWindow->GetPlane();
@@ -433,7 +429,7 @@ void TileCollisionEditorPanel::buttonSetCollisionForSelectedRange_onMouseClick(v
 void TileCollisionEditorPanel::numericUpDownBoxBehaviorFlag_onValueChanged(void* sender, EventArgs* e) {
     if (tileSelector->SelectedTileID < 0)
         return;
-    if (!TileCfg)
+    if (!Tileset)
         return;
 
     int p = tilePreviewWindow->GetPlane();
@@ -441,7 +437,7 @@ void TileCollisionEditorPanel::numericUpDownBoxBehaviorFlag_onValueChanged(void*
     int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
 
     for (int t = tS; t <= tE; t++) {
-        Stage::EditableTileConfig* tileData = &TileCfg[p][t];
+        EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
         tileData->Behavior = (int)numericUpDownBoxBehaviorFlag->Value;
     }
 
@@ -450,7 +446,7 @@ void TileCollisionEditorPanel::numericUpDownBoxBehaviorFlag_onValueChanged(void*
 void TileCollisionEditorPanel::comboboxOrientation_onSelectedIndexChanged(void* sender, EventArgs* args) {
     if (tileSelector->SelectedTileID < 0)
         return;
-    if (!TileCfg)
+    if (!Tileset)
         return;
     if (comboboxOrientation->SelectedIndex < 0)
         return;
@@ -460,7 +456,7 @@ void TileCollisionEditorPanel::comboboxOrientation_onSelectedIndexChanged(void* 
     int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
 
     for (int t = tS; t <= tE; t++) {
-        Stage::EditableTileConfig* tileData = &TileCfg[p][t];
+        EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
         tileData->Orientation = comboboxOrientation->SelectedIndex;
     }
 
@@ -481,7 +477,7 @@ void TileCollisionEditorPanel::radioButtonShow_onCheckedChanged(void* sender, Ev
 void TileCollisionEditorPanel::radialKnobAngle_onValueChanged(void* sender, DialValueChangedArgs* args) {
     if (tileSelector->SelectedTileID < 0)
         return;
-    if (!TileCfg)
+    if (!Tileset)
         return;
 
     int newAngle = (int)args->Value;
@@ -491,7 +487,7 @@ void TileCollisionEditorPanel::radialKnobAngle_onValueChanged(void* sender, Dial
     int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
 
     for (int t = tS; t <= tE; t++) {
-        Stage::EditableTileConfig* tileData = &TileCfg[p][t];
+        EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
 
         switch (GetAngleEditSide()) {
         case 0: tileData->AngleTop = newAngle; break;

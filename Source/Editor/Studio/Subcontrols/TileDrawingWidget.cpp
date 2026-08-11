@@ -19,6 +19,11 @@
 #include <Studio/Subcontrols/TileCollisionEditorPanel.hpp>
 #include <Studio/Subcontrols/TileDrawingWidget.hpp>
 
+TileDrawingWidget::TileDrawingWidget(TileCollisionEditorPanel* tileCollisionEditor) : Control() {
+    this->tileCollisionEditor = tileCollisionEditor;
+    this->Tileset = tileCollisionEditor->Tileset;
+}
+
 int TileDrawingWidget::GetPlane() {
     if (tileCollisionEditor->radioButtonShowA->Checked)
         return 0;
@@ -31,7 +36,6 @@ int TileDrawingWidget::GetPlane() {
 void TileDrawingWidget::MouseSelect(MouseEventArgs* e) {
     auto bounds = GetScreenRect();
     TileSelector* tileSelector = tileCollisionEditor->tileSelector;
-    SceneEditor* editor = tileCollisionEditor->Editor;
     int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
     int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
 
@@ -46,18 +50,18 @@ void TileDrawingWidget::MouseSelect(MouseEventArgs* e) {
 
     dragPxEnd = { (e->X - bounds.x), (e->Y - bounds.y) };
 
-    if (editor->LinkedStage) {
+    if (Tileset) {
         if (tileSelector->SelectedTileID >= 0) {
             if (editMode == EditMode::Collision) {
                 if (e->Button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
                     for (int t = tS; t <= tE; t++) {
-                        Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
+                        EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
                         tileData->Collision[column] = row;
                     }
                 }
                 else if (e->Button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
                     for (int t = tS; t <= tE; t++) {
-                        Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
+                        EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
                         tileData->Collision[column] = 0xFF;
                     }
                 }
@@ -71,10 +75,10 @@ void TileDrawingWidget::MouseSelect(MouseEventArgs* e) {
                     return;
 
                 for (int t = tS; t <= tE; t++) {
-                    Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
+                    EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
                     int newAngle = Math::ATan(dragPxEnd.X - dragPxStart.X, dragPxEnd.Y - dragPxStart.Y);
 
-                    switch (editor->tileCollisionEditor->GetAngleEditSide()) {
+                    switch (tileCollisionEditor->GetAngleEditSide()) {
                     case 0: tileData->AngleTop = newAngle; break;
                     case 1: tileData->AngleLeft = newAngle; break;
                     case 2: tileData->AngleRight = newAngle; break;
@@ -110,17 +114,21 @@ void TileDrawingWidget::OnMouseMove(MouseEventArgs* e) {
 void TileDrawingWidget::OnMouseUp(MouseEventArgs* e) {
     if (MouseCaptured == this) {
         TileSelector* tileSelector = tileCollisionEditor->tileSelector;
-        SceneEditor* editor = tileCollisionEditor->Editor;
         int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
         int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
 
         int p = GetPlane();
 
         if (editMode == EditMode::Collision) {
-            for (int t = tS; t <= tE; t++)
-                editor->LinkedStage->UpdateTileCollisionTexture(p, t);
+            if (Tileset) {
+                for (int t = tS; t <= tE; t++)
+                    Tileset->UpdateTileCollisionTexture(p, t);
+            }
 
-            editor->tilePlacementField->UpdateRenderTarget = true;
+            SceneEditor* editor = tileCollisionEditor->Editor;
+            if (editor) {
+                editor->tilePlacementField->UpdateRenderTarget = true;
+            }
         }
 
         UncaptureMouse();
@@ -149,14 +157,13 @@ void TileDrawingWidget::Render() {
     const Color greay = Color(0x808080, 0xFF);
     const Color white = Color(0xFFFFFF, 0xFF);
     TileSelector* tileSelector = tileCollisionEditor->tileSelector;
-    SceneEditor* editor = tileCollisionEditor->Editor;
     bool showGrid = tileCollisionEditor->checkBoxShowGrid->GetChecked();
 
     int p = GetPlane();
 
     UI::Graphics::Renderer::DrawRect(&bounds, Color(0x000000, 0xFF));
 
-    if (editor->LinkedStage) {
+    if (Tileset) {
         if (tileSelector->SelectedTileID >= 0) {
             const int TileSize = 16;
             const int columnMask = 63;
@@ -169,9 +176,9 @@ void TileDrawingWidget::Render() {
             SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
             SDL_Rect dst = bounds;
             UI::Graphics::Renderer::DstRectAdjustment(&dst);
-            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, editor->LinkedStage->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
 
-            Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
+            EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
 
             if (editMode == EditMode::Collision) {
                 if (tileData->Orientation) {

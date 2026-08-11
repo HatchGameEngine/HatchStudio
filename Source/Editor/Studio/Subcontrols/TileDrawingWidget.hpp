@@ -23,15 +23,14 @@ struct TileDrawingWidget : Control {
     };
 
     TileCollisionEditorPanel* tileCollisionEditor = NULL;
+    StageTileset* Tileset = NULL;
     EditMode editMode = EditMode::Collision;
 
     MouseEventArgs dragStart = { };
     Vector2 dragPxStart;
     Vector2 dragPxEnd;
 
-    TileDrawingWidget(TileCollisionEditorPanel* tileCollisionEditor) : Control() {
-        this->tileCollisionEditor = tileCollisionEditor;
-    }
+    TileDrawingWidget(TileCollisionEditorPanel* tileCollisionEditor);
 
     int GetPlane();
 

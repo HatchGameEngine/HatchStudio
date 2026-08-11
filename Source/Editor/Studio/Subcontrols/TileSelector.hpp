@@ -17,7 +17,7 @@
 #include <UI/Controls/ScrollBar.hpp>
 
 struct TileSelector : Panel {
-    Stage* LinkedStage = NULL;
+    StageTileset* Tileset = NULL;
 
     int TileSize = 16;
     int TileSpace = 17;
@@ -39,7 +39,9 @@ struct TileSelector : Panel {
     DEFINE_SIMPLE_EVENT(SelectedTileIDChanged);
     DEFINE_SIMPLE_EVENT(SelectedTileRangeChanged);
 
-    TileSelector(Stage* stage);
+    TileSelector(StageTileset* tileset);
+
+    void SetTileset(StageTileset* tileset);
 
     void OnMouseDown(MouseEventArgs* e);
     void OnMouseMove(MouseEventArgs* e);

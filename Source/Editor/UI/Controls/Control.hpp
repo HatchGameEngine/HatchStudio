@@ -183,13 +183,6 @@ struct Event {
     }
 };
 
-template <class ItemType>
-class ArrayList : public List<ItemType> {
-protected:
-    bool IsFixedSize() const noexcept { return false; };
-    bool IsReadOnly() const noexcept { return false; };
-};
-
 enum DockStyle {
     DOCK_NONE,
     DOCK_TOP,
