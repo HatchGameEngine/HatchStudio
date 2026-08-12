@@ -330,7 +330,9 @@ void TileSelector::Render() {
                     TileHeight
                 };
 
-                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                if (src.x < Tileset->ImageWidth && src.y < Tileset->ImageHeight) {
+                    SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+                }
             }
             if (ShowTileCollision && Tileset->TileCollisionTextures[TileCollisionPlane] != NULL) {
                 SDL_Rect src = {
