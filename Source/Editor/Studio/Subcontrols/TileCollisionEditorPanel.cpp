@@ -197,7 +197,7 @@ void TileCollisionEditorPanel::Init() {
 
     checkBoxShowAngle = new CheckBox("Show Angle:");
     checkBoxShowAngle->CheckState = CheckState::Unchecked;
-    checkBoxShowAngle->Location = { numericUpDownBoxBehaviorFlag->Location.X, checkBoxShowGrid->Location.Y + 20 };
+    checkBoxShowAngle->Location = { numericUpDownBoxBehaviorFlag->Location.X, checkBoxShowGrid->Location.Y + 25 };
     checkBoxShowAngle->CheckAlign = TEXT_ALIGN_RIGHT | TEXT_VALIGN_MIDDLE;
     checkBoxShowAngle->Padding = 0;
     checkBoxShowAngle->Padding.Left = 8;
