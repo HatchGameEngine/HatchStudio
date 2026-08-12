@@ -219,9 +219,28 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
     };
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonTileCount);
 
+    labelCurrentTileRange = new Label();
+    labelCurrentTileRange->Location = { 8, buttonTileCount->Location.Y + 28 + 8 };
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelCurrentTileRange);
+
     labelTileCount = new Label();
-    labelTileCount->Location = { 8, buttonTileCount->Location.Y + 28 + 8 };
+    labelTileCount->Location = { 8, labelCurrentTileRange->Location.Y + 20 };
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelTileCount);
+
+    TileSelector* tileSelector = tileCollisionEditorPanel->tileSelector;
+    auto updatelabelCurrentTileRangeText = [this, tileSelector](auto*, auto*) -> void {
+        int _min = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
+        int _max = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
+        char stringBuffer[256];
+        if (_min != _max)
+            snprintf(stringBuffer, 255, "Current Tile Range: %d - %d", _min, _max);
+        else
+            snprintf(stringBuffer, 255, "Current Tile ID: %d", tileSelector->SelectedTileID);
+        this->labelCurrentTileRange->SetText(stringBuffer);
+    };
+    tileSelector->onSelectedTileRangeChanged += updatelabelCurrentTileRangeText;
+    tileSelector->onSelectedTileIDChanged += updatelabelCurrentTileRangeText;
+    tileSelector->OnSelectedTileIDChanged(NULL);
 
     tileCollisionEditorPanel->splitter->Orientation = SplitOrientation::Horizontal;
     tileCollisionEditorPanel->splitter->SplitterWidth = 4;
@@ -235,6 +254,7 @@ TileCollisionEditor::~TileCollisionEditor() {
     delete labelOptions;
     delete buttonSetImage;
     delete buttonTileCount;
+    delete labelCurrentTileRange;
     delete labelTileCount;
     delete Tileset;
 }
