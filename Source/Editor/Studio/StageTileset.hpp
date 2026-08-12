@@ -29,6 +29,7 @@ struct StageTileset {
     int TileWidth = 16;
     int TileHeight = 16;
     int TileCount = 0;
+    int ImageTileCount = 0;
 
     int ImageWidth = 0;
     int ImageHeight = 0;

@@ -49,7 +49,9 @@ namespace UI::Graphics::Renderer {
     void DrawTexture(SDL_Texture* texture, SDL_Rect* src, SDL_Rect* rect, Color color, double angle = 0.0, SDL_Point* center = NULL, int flip = 0);
     void DrawTexture(SDL_Texture* texture, SDL_Rect* src, int x, int y, int w, int h, Color color, double angle = 0.0, SDL_Point* center = NULL, int flip = 0);
     void DrawFont(String* text, Font::Face* font, int x, int y, int alignment, Color color);
+    void DrawFontWrapped(String* text, Font::Face* font, int x, int y, int alignment, float maxWidth, Color color);
     void DrawFontEllipsis(String* text, Font::Face* font, int x, int y, int maxWidth, int alignment, Color color);
     void MeasureFont(String* text, Font::Face* font, int* width, int* height);
+    void MeasureFontWrapped(String* text, Font::Face* font, float maxWidth, int* width, int* height);
     void MeasureFontEllipsis(String* text, Font::Face* font, int* width, int* height, int maxWidth, size_t* lastChar);
 }

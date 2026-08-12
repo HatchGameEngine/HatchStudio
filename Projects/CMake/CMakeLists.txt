@@ -45,6 +45,7 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Control.cpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DialogBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/DropDown.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Form.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Label.cpp
@@ -92,6 +93,8 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Control.hpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DialogBox.hpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DropDown.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Form.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Label.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ListView.hpp

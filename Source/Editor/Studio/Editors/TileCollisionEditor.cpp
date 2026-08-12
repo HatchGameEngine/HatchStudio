@@ -13,6 +13,7 @@
 
 #include <Studio/Impl.hpp>
 
+#include <UI/Controls/DialogBox.hpp>
 #include <UI/Filesystem/Paths.hpp>
 #include <UI/System/Application.hpp>
 #include <UI/System/SystemDialog.hpp>
@@ -253,10 +254,30 @@ bool TileCollisionEditor::PromptSetImage() {
     ofd.Multiselect = false;
 
     if (UI::SystemDialog::OpenFile(&ofd) && Tileset->Load(ofd.Filenames[0])) {
-        // TODO: This should ask the user if they want to change the tile count
         // TODO: Tile count changes should properly bound TileSelector's current selection.
         tileCollisionEditorPanel->SetTileset(Tileset);
-        UpdateTileCountLabel();
+
+        if (Tileset->ImageTileCount != Tileset->TileCount) {
+            char stringBuffer[256];
+            snprintf(stringBuffer,
+                sizeof stringBuffer,
+                "Change tile count?\nOld tile count: %d\nNew tile count: %d",
+                Tileset->TileCount,
+                Tileset->ImageTileCount);
+
+            DialogBox* dialog = new DialogBox(250, 140, "Set Image", stringBuffer);
+            dialog->BackColor = BackColor;
+
+            UI::System::Application::ShowDialog(dialog, [this, dialog](DialogResult result) -> void {
+                if (result == DialogResult::Yes) {
+                    Tileset->TileCount = Tileset->ImageTileCount;
+                    UpdateTileCountLabel();
+                }
+            });
+        }
+        else {
+            UpdateTileCountLabel();
+        }
 
         SetChangesUnsaved();
 

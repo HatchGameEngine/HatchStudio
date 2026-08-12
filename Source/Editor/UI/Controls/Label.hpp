@@ -18,6 +18,10 @@ struct Label : Control {
 public:
     String Text = { };
 
+    int AlignFlags = 0;
+    bool WordWrap = false;
+    float MaxWrapWidth = 0.0f;
+
     Label();
     Label(CString text);
     Label(String* text);

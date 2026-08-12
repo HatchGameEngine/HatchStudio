@@ -1011,6 +1011,8 @@ bool SceneEditor::PromptImportTileset() {
 
 bool SceneEditor::TilesetImport(List<char*>& filenames) {
     if (LinkedStage->Tileset.Import(filenames, &Stamps)) {
+        LinkedStage->Tileset.TileCount = LinkedStage->Tileset.ImageTileCount;
+
         // Update tileSelector
         tileSelector->ResizeChildren();
 

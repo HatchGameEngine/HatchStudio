@@ -94,7 +94,7 @@ bool StageTileset::Load(CString filename) {
     TileHeight = 16;
     WidthInTiles = ImageWidth / TileWidth;
     HeightInTiles = ImageHeight / TileHeight;
-    TileCount = WidthInTiles * HeightInTiles;
+    ImageTileCount = WidthInTiles * HeightInTiles;
 
     // Update tile image data
     Studio::Textures::CreateTextureFromSTBI(&TileImageTexture, (Uint8*)newTilesetImageData, tileset_w, tileset_h);
@@ -267,7 +267,7 @@ bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stamps
     TileHeight = 16;
     WidthInTiles = ImageWidth / TileWidth;
     HeightInTiles = ImageHeight / TileHeight;
-    TileCount = tile;
+    ImageTileCount = tile;
 
     // Update tile image data
     Studio::Textures::CreateTextureFromSTBI(&TileImageTexture, (Uint8*)newTilesetImageData, 1024, 1024);

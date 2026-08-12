@@ -92,9 +92,6 @@ struct Form : Control {
     void SetTitle(CString title);
     void SetTitle(String* title);
 
-    void RenderClear();
-    void RenderPresent();
-
     virtual void Load();
     void Close();
 
