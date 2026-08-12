@@ -36,6 +36,12 @@ int  ControlCollection::IndexOf(Control* control) {
 bool ControlCollection::Contains(Control* control) {
     return IndexOf(control) != -1;
 }
+Control* ControlCollection::Last() {
+    if (Count() > 0) {
+        return Items[Count() - 1];
+    }
+    return NULL;
+}
 void ControlCollection::RemoveAt(int index) {
     Control* control = Items[index];
     control->Parent = NULL;

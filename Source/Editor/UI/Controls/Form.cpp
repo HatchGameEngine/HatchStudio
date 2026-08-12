@@ -125,6 +125,15 @@ void Form::ShowDialog(Form* parent, DialogCallback callback) {
     IsDialog = true;
 }
 
+void Form::AdjustSize(Control* panel) {
+    UpdateLayout();
+
+    Size = {
+        panel->Controls.Last()->Location.X + panel->Controls.Last()->Size.Get().W + panel->Padding.Right,
+        panel->Controls.Last()->Location.Y + panel->Controls.Last()->Size.Get().H + panel->Padding.Bottom
+    };
+}
+
 void Form::CheckShortcuts(SDL_Keycode key, SDL_Keymod mod) {
     int* modifier = (int*)&mod;
     *modifier &= ~(KMOD_CAPS | KMOD_NUM);

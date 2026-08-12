@@ -214,6 +214,7 @@ struct ControlCollection {
     void Clear();
     int  IndexOf(Control* control);
     bool Contains(Control* control);
+    Control* Last();
     void RemoveAt(int index);
     void Remove(Control* control);
     int  Count();

@@ -160,8 +160,7 @@ struct Form_TileCountDialog : Form {
 
 
         this->Controls.Add(mainPanel);
-
-        this->Size = { 300, 100 };
+        this->AdjustSize(mainPanel);
     }
     ~Form_TileCountDialog() {
         delete labelTileCount;

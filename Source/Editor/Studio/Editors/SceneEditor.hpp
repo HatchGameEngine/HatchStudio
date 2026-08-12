@@ -1252,12 +1252,7 @@ struct SceneEditor : Studio::ResourceEditor {
 
 
                 this->Controls.Add(mainPanel);
-                this->UpdateLayout(); // This should theoretically happen during Controls.Add
-
-                this->Size = {
-                    buttonCancel->Location.X + buttonCancel->Size.Get().W + mainPanel->Padding.Right,
-                    buttonCancel->Location.Y + buttonCancel->Size.Get().H + mainPanel->Padding.Bottom
-                };
+                this->AdjustSize(mainPanel);
             }
             ~Form_EditClass() {
                 delete labelName;
@@ -1355,12 +1350,7 @@ struct SceneEditor : Studio::ResourceEditor {
 
 
                 this->Controls.Add(mainPanel);
-                this->UpdateLayout();
-
-                this->Size = {
-                    buttonCancel->Location.X + buttonCancel->Size.Get().W + mainPanel->Padding.Right,
-                    buttonCancel->Location.Y + buttonCancel->Size.Get().H + mainPanel->Padding.Bottom
-                };
+                this->AdjustSize(mainPanel);
             }
             ~Form_EditProperty() {
                 delete labelName;
