@@ -45,6 +45,7 @@ struct TileCollisionEditor : Studio::ResourceEditor {
     TileCollisionEditor();
     ~TileCollisionEditor();
 
+    void SetTileCount(int tileCount);
     void UpdateTileCountLabel();
 
     void Render();

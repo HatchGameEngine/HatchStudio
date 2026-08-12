@@ -213,8 +213,7 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
 
         UI::System::Application::ShowDialog(dialog, [this, dialog](DialogResult result) -> void {
             if (result == DialogResult::OK) {
-                Tileset->TileCount = (int)dialog->numericUpDownBoxTileCount->Value;
-                UpdateTileCountLabel();
+                SetTileCount((int)dialog->numericUpDownBoxTileCount->Value);
             }
         });
     };
@@ -240,6 +239,16 @@ TileCollisionEditor::~TileCollisionEditor() {
     delete Tileset;
 }
 
+void TileCollisionEditor::SetTileCount(int tileCount) {
+    Tileset->TileCount = tileCount;
+
+    TileSelector* tileSelector = tileCollisionEditorPanel->tileSelector;
+    tileSelector->SelectRange(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
+    tileSelector->Select(tileSelector->SelectedTileID);
+
+    UpdateTileCountLabel();
+}
+
 void TileCollisionEditor::UpdateTileCountLabel() {
     char stringBuffer[24];
     snprintf(stringBuffer, sizeof stringBuffer, "Tile Count: %d", Tileset->TileCount);
@@ -254,7 +263,6 @@ bool TileCollisionEditor::PromptSetImage() {
     ofd.Multiselect = false;
 
     if (UI::SystemDialog::OpenFile(&ofd) && Tileset->Load(ofd.Filenames[0])) {
-        // TODO: Tile count changes should properly bound TileSelector's current selection.
         tileCollisionEditorPanel->SetTileset(Tileset);
 
         if (Tileset->ImageTileCount != Tileset->TileCount) {
@@ -270,8 +278,7 @@ bool TileCollisionEditor::PromptSetImage() {
 
             UI::System::Application::ShowDialog(dialog, [this, dialog](DialogResult result) -> void {
                 if (result == DialogResult::Yes) {
-                    Tileset->TileCount = Tileset->ImageTileCount;
-                    UpdateTileCountLabel();
+                    SetTileCount(Tileset->ImageTileCount);
                 }
             });
         }

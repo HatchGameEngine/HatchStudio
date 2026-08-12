@@ -69,7 +69,7 @@ void TileSelector::OnMouseDown(MouseEventArgs* e) {
             my >= 0 &&
             mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
             my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-            int tileIndex = M_MIN((mx / TileSpaceH) + (my / TileSpaceV) * Columns, Tileset->TileCount);
+            int tileIndex = (mx / TileSpaceH) + (my / TileSpaceV) * Columns;
             SelectRange(tileIndex, tileIndex);
             Select(tileIndex);
         }
@@ -93,7 +93,7 @@ void TileSelector::OnMouseMove(MouseEventArgs* e) {
             my >= 0 &&
             mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
             my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-            int tileIndex = M_MIN((mx / TileSpaceH) + (my / TileSpaceV) * Columns, Tileset->TileCount);
+            int tileIndex = (mx / TileSpaceH) + (my / TileSpaceV) * Columns;
             SelectRange(SelectedTileRange_Start, tileIndex);
             Select(tileIndex);
         }
@@ -261,12 +261,25 @@ int TileSelector::TileIndexToRow(int t) {
 }
 
 void TileSelector::Select(int id) {
+    if (!Tileset || Tileset->TileCount == 0) {
+        return;
+    }
+
+    id = M_CLAMP(id, 0, Tileset->TileCount - 1);
+
     if (SelectedTileID != id) {
         SelectedTileID = id;
         OnSelectedTileIDChanged(NULL);
     }
 }
 void TileSelector::SelectRange(int start, int end) {
+    if (!Tileset || Tileset->TileCount == 0) {
+        return;
+    }
+
+    end = M_CLAMP(end, 0, Tileset->TileCount - 1);
+    start = M_MIN(M_CLAMP(start, 0, Tileset->TileCount - 1), end);
+
     if (SelectedTileRange_Start != start ||
         SelectedTileRange_End != end) {
         SelectedTileRange_Start = start;
