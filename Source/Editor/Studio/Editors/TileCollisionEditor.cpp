@@ -14,6 +14,7 @@
 #include <Studio/Impl.hpp>
 
 #include <UI/Filesystem/Paths.hpp>
+#include <UI/System/Application.hpp>
 #include <UI/System/SystemDialog.hpp>
 
 #include <Studio/Subcontrols/TileCollisionEditorPanel.hpp>
@@ -103,6 +104,73 @@ int TileCollisionEditor::GetEditorType() {
 }
 
 // UI Functions
+struct Form_TileCountDialog : Form {
+    Label* labelTileCount;
+    NumericUpDown* numericUpDownBoxTileCount;
+    Button* buttonOK;
+    Button* buttonCancel;
+
+    FlowLayoutPanel* mainPanel;
+
+    Form_TileCountDialog() : Form(250, 140, "") {
+        mainPanel = new FlowLayoutPanel();
+        mainPanel->BackColor = Color(0x000000, 0x00);
+        mainPanel->Dock = DOCK_FILL;
+        mainPanel->FlowDirection = FlowDirection::LEFT_TO_RIGHT;
+        mainPanel->Padding = 10;
+        mainPanel->WrapContents = true;
+
+        labelTileCount = new Label("Tile Count:");
+        labelTileCount->Anchor = ANCHOR_TOP;
+        labelTileCount->Margin.Top = 5;
+        labelTileCount->Margin.Right = 10;
+        mainPanel->Controls.Add(labelTileCount);
+
+        numericUpDownBoxTileCount = new NumericUpDown();
+        numericUpDownBoxTileCount->Anchor = ANCHOR_TOP;
+        numericUpDownBoxTileCount->Minimum = 1.0f;
+        numericUpDownBoxTileCount->Maximum = 4096.0f;
+        numericUpDownBoxTileCount->Size = { 100, 25 };
+        numericUpDownBoxTileCount->LineBreak = true;
+        mainPanel->Controls.Add(numericUpDownBoxTileCount);
+
+
+        buttonOK = new Button("OK");
+        buttonOK->Anchor = ANCHOR_TOP;
+        buttonOK->Size = { 100, 25 };
+        buttonOK->Margin.Right = 5;
+        buttonOK->Margin.Top = 15;
+        buttonOK->onClick += [this](auto object, auto e) -> void {
+            this->Result = DialogResult::OK;
+            this->Close();
+        };
+        mainPanel->Controls.Add(buttonOK);
+
+        buttonCancel = new Button("Cancel");
+        buttonCancel->Anchor = ANCHOR_TOP;
+        buttonCancel->Size = { 100, 25 };
+        buttonCancel->Margin.Top = 15;
+        buttonCancel->onClick += [this](auto object, auto e) -> void {
+            this->Result = DialogResult::Cancel;
+            this->Close();
+        };
+        mainPanel->Controls.Add(buttonCancel);
+
+
+        this->Controls.Add(mainPanel);
+
+        this->Size = { 300, 100 };
+    }
+    ~Form_TileCountDialog() {
+        delete labelTileCount;
+        delete numericUpDownBoxTileCount;
+        delete buttonOK;
+        delete buttonCancel;
+
+        delete mainPanel;
+    }
+};
+
 TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
     Dock = DOCK_FILL;
     Padding = 0;
@@ -127,12 +195,25 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
         }
     };
 
-    // TODO: Implement this.
     buttonTileCount = new Button();
     buttonTileCount->Location = { 8, buttonSetImage->Location.Y + 28 };
     buttonTileCount->Size = { 200, 25 };
     buttonTileCount->SetText("Set Tile Count...");
-    buttonTileCount->Enabled = false;
+    buttonTileCount->onClick += [this](auto* a, auto* d) -> void {
+        if (!Tileset) {
+            return;
+        }
+
+        Form_TileCountDialog* dialog = new Form_TileCountDialog();
+        dialog->numericUpDownBoxTileCount->Value = Tileset->TileCount;
+        dialog->BackColor = BackColor;
+
+        UI::System::Application::ShowDialog(dialog, [this, dialog](DialogResult result) -> void {
+            if (result == DialogResult::OK) {
+                Tileset->TileCount = (int)dialog->numericUpDownBoxTileCount->Value;
+            }
+        });
+    };
 
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelOptions);
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonSetImage);
