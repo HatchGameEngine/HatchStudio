@@ -187,22 +187,22 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
     labelOptions->Location = { 8, optionsLabelPos + 28 };
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelOptions);
 
-    buttonSetImage = new Button();
-    buttonSetImage->Location = { 8, labelOptions->Location.Y + 28 };
-    buttonSetImage->Size = { 200, 25 };
-    buttonSetImage->SetText("Set Image...");
-    buttonSetImage->onClick += [this](auto* a, auto* d) -> void {
+    buttonChangeTileImage = new Button();
+    buttonChangeTileImage->Location = { 8, labelOptions->Location.Y + 28 };
+    buttonChangeTileImage->Size = { 200, 25 };
+    buttonChangeTileImage->SetText("Change Tile Image...");
+    buttonChangeTileImage->onClick += [this](auto* a, auto* d) -> void {
         if (Tileset != NULL && PromptSetImage()) {
             tileCollisionEditorPanel->buttonSetCollisionForSelectedRange->Enabled = true;
         }
     };
-    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonSetImage);
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonChangeTileImage);
 
-    buttonTileCount = new Button();
-    buttonTileCount->Location = { 8, buttonSetImage->Location.Y + 28 };
-    buttonTileCount->Size = { 200, 25 };
-    buttonTileCount->SetText("Set Tile Count...");
-    buttonTileCount->onClick += [this](auto* a, auto* d) -> void {
+    buttonChangeTileCount = new Button();
+    buttonChangeTileCount->Location = { 8, buttonChangeTileImage->Location.Y + 28 };
+    buttonChangeTileCount->Size = { 200, 25 };
+    buttonChangeTileCount->SetText("Change Tile Count...");
+    buttonChangeTileCount->onClick += [this](auto* a, auto* d) -> void {
         if (!Tileset) {
             return;
         }
@@ -217,10 +217,10 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
             }
         });
     };
-    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonTileCount);
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonChangeTileCount);
 
     labelCurrentTileRange = new Label();
-    labelCurrentTileRange->Location = { 8, buttonTileCount->Location.Y + 28 + 8 };
+    labelCurrentTileRange->Location = { 8, buttonChangeTileCount->Location.Y + 28 + 8 };
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelCurrentTileRange);
 
     labelTileCount = new Label();
@@ -252,8 +252,8 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
 TileCollisionEditor::~TileCollisionEditor() {
     delete tileCollisionEditorPanel;
     delete labelOptions;
-    delete buttonSetImage;
-    delete buttonTileCount;
+    delete buttonChangeTileImage;
+    delete buttonChangeTileCount;
     delete labelCurrentTileRange;
     delete labelTileCount;
     delete Tileset;

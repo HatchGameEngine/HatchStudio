@@ -37,8 +37,8 @@ struct TileCollisionEditor : Studio::ResourceEditor {
     // UI stuffs
     TileCollisionEditorPanel* tileCollisionEditorPanel = NULL;
     Label* labelOptions = NULL;
-    Button* buttonSetImage = NULL;
-    Button* buttonTileCount = NULL;
+    Button* buttonChangeTileImage = NULL;
+    Button* buttonChangeTileCount = NULL;
     Label* labelCurrentTileRange = NULL;
     Label* labelTileCount = NULL;
 
