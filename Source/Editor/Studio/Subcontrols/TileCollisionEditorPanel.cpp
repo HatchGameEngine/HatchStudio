@@ -324,6 +324,9 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     EditableTileConfig* tileData = &Tileset->TileCfg[p][i];
 
     int imageWidth = Tileset->ImageWidth;
+    int imageHeight = Tileset->ImageHeight;
+    size_t imageSize = (size_t)(imageWidth * imageHeight);
+
     int tileWidth = Tileset->TileWidth;
     int tileHeight = Tileset->TileHeight;
     int columnCount = Tileset->WidthInTiles;
@@ -337,15 +340,15 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     // Determine whether is ceiling or not.
     int topCount = 0;
     int bottomCount = 0;
-    for (int p = tileImageX; p < tileImageX + tileWidth; p++) {
+    for (int p = tileImageX; p < tileImageX + tileWidth && p < imageWidth; p++) {
         int px;
 
         px = (p + (tileImageY) * imageWidth);
-        if ((pxData[px] & 0xFF000000) > 0)
+        if (px < imageSize && (pxData[px] & 0xFF000000) > 0)
             topCount++;
 
         px = (p + (tileImageY + tileHeight - 1) * imageWidth);
-        if ((pxData[px] & 0xFF000000) > 0)
+        if (px < imageSize && (pxData[px] & 0xFF000000) > 0)
             bottomCount++;
     }
     if (topCount > bottomCount)
@@ -362,12 +365,12 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     if (isCeiling) {
         // If ceiling, start checking from bottom and vice-versa
         int fx = 0;
-        for (int p = tileImageX; p < tileImageX + tileWidth; p++) {
+        for (int p = tileImageX; p < tileImageX + tileWidth && p < imageWidth; p++) {
             int value = 0xFF;
             for (int c = 0, pY = (p + (tileImageY + tileHeight - 1) * imageWidth);
                 c < tileHeight;
                 c++, pY -= imageWidth) {
-                if ((pxData[pY] & 0xFF000000) > 0) {
+                if (pY < imageSize && (pxData[pY] & 0xFF000000) > 0) {
                     value = tileHeight - 1 - c;
                     break;
                 }
@@ -387,10 +390,10 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     }
     else {
         int fx = 0;
-        for (int p = tileImageX; p < tileImageX + tileWidth; p++) {
+        for (int p = tileImageX; p < tileImageX + tileWidth && p < imageWidth; p++) {
             int value = 0xFF;
             for (int c = 0, pY = (p + (tileImageY) * imageWidth);
-                c < tileHeight;
+                c < tileHeight && pY < imageSize;
                 c++, pY += imageWidth) {
                 if ((pxData[pY] & 0xFF000000) > 0) {
                     value = c;
