@@ -63,9 +63,6 @@ bool TileCollisionEditor::Open() {
         return false;
     }
 
-    // TODO: This should check if Tileset.png exists before trying to load it
-    Tileset->Load(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Tileset.png"));
-
     tileCollisionEditorPanel->SetTileset(Tileset);
 
     return true;
