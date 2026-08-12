@@ -29,6 +29,7 @@ void TileCollisionEditor::New() {
     Tileset->TileCount = 128;
 
     tileCollisionEditorPanel->SetTileset(Tileset);
+    UpdateTileCountLabel();
 
     SetChangesSaved();
     JustCreated = true;
@@ -65,6 +66,7 @@ bool TileCollisionEditor::Open() {
     }
 
     tileCollisionEditorPanel->SetTileset(Tileset);
+    UpdateTileCountLabel();
 
     return true;
 }
@@ -183,8 +185,8 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
 
     labelOptions = new Label("Options:");
     labelOptions->Location = { 8, optionsLabelPos + 28 };
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelOptions);
 
-    // TODO: Center the buttons
     buttonSetImage = new Button();
     buttonSetImage->Location = { 8, labelOptions->Location.Y + 28 };
     buttonSetImage->Size = { 200, 25 };
@@ -194,6 +196,7 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
             tileCollisionEditorPanel->buttonSetCollisionForSelectedRange->Enabled = true;
         }
     };
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonSetImage);
 
     buttonTileCount = new Button();
     buttonTileCount->Location = { 8, buttonSetImage->Location.Y + 28 };
@@ -211,13 +214,16 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
         UI::System::Application::ShowDialog(dialog, [this, dialog](DialogResult result) -> void {
             if (result == DialogResult::OK) {
                 Tileset->TileCount = (int)dialog->numericUpDownBoxTileCount->Value;
+                UpdateTileCountLabel();
             }
         });
     };
-
-    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelOptions);
-    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonSetImage);
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonTileCount);
+
+    labelTileCount = new Label();
+    labelTileCount->Location = { 8, buttonTileCount->Location.Y + 28 + 8 };
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelTileCount);
+
     tileCollisionEditorPanel->splitter->Orientation = SplitOrientation::Horizontal;
     tileCollisionEditorPanel->splitter->SplitterWidth = 4;
     tileCollisionEditorPanel->splitter->IsSplitterFixed = false;
@@ -230,7 +236,14 @@ TileCollisionEditor::~TileCollisionEditor() {
     delete labelOptions;
     delete buttonSetImage;
     delete buttonTileCount;
+    delete labelTileCount;
     delete Tileset;
+}
+
+void TileCollisionEditor::UpdateTileCountLabel() {
+    char stringBuffer[24];
+    snprintf(stringBuffer, sizeof stringBuffer, "Tile Count: %d", Tileset->TileCount);
+    labelTileCount->SetText(stringBuffer);
 }
 
 bool TileCollisionEditor::PromptSetImage() {
@@ -244,6 +257,7 @@ bool TileCollisionEditor::PromptSetImage() {
         // TODO: This should ask the user if they want to change the tile count
         // TODO: Tile count changes should properly bound TileSelector's current selection.
         tileCollisionEditorPanel->SetTileset(Tileset);
+        UpdateTileCountLabel();
 
         SetChangesUnsaved();
 
