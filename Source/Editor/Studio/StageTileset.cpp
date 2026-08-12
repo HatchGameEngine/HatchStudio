@@ -27,11 +27,7 @@
 #define STAMP_FILENAME_PREFIX "Stamp_"
 
 StageTileset::StageTileset() {
-    memset(TileCfg, 0, sizeof(TileCfg));
-    for (int i = 0; i < 0x1000; i++) {
-        memset(&TileCfg[0][i].Collision, 0xFF, sizeof(TileCfg[0][i].Collision));
-        memset(&TileCfg[1][i].Collision, 0xFF, sizeof(TileCfg[1][i].Collision));
-    }
+    ClearCollisionData(0, 0x1000);
 
     memset(TileCollisionTextures, 0, sizeof(TileCollisionTextures));
     memset(TileHashes, 0, sizeof(TileHashes));
@@ -50,6 +46,31 @@ StageTileset::~StageTileset() {
 
     if (TileImagePixelData)
         free(TileImagePixelData);
+}
+
+void StageTileset::ClearCollisionData(int start, int end) {
+    for (int i = start; i < end; i++) {
+        memset(&TileCfg[0][i], 0, sizeof(TileCfg[0][i]));
+        memset(&TileCfg[0][i].Collision, 0xFF, sizeof(TileCfg[0][i].Collision));
+        memset(&TileCfg[1][i].Collision, 0xFF, sizeof(TileCfg[1][i].Collision));
+    }
+}
+
+void StageTileset::SetTileCount(int newTileCount) {
+    newTileCount = M_CLAMP(newTileCount, 0, 0x1000);
+
+    if (newTileCount == TileCount) {
+        return;
+    }
+
+    if (newTileCount < TileCount) {
+        ClearCollisionData(newTileCount, TileCount);
+    }
+    else {
+        ClearCollisionData(TileCount, newTileCount);
+    }
+
+    TileCount = newTileCount;
 }
 
 // Simply loads an image from the given filename.
@@ -529,6 +550,7 @@ bool StageTileset::ReadTileConfig_RSDK(Stream* stream) {
         stream->ReadCompressed(&RSDK_temp[0][0]);
 
         TileCount = 0x400;
+        ClearCollisionData(0, TileCount);
 
         for (size_t p = 0; p < 2; p++) {
             for (size_t i = 0; i < (size_t)TileCount; i++) {
@@ -560,6 +582,8 @@ bool StageTileset::ReadTileConfig_Hatch(Stream* stream) {
     if (magic != MAGIC_TILESET_HATCH) {
         return false;
     }
+
+    ClearCollisionData(0, 0x1000);
 
     TileCount = stream->ReadUInt32();
     int tileSize = stream->ReadByte();
@@ -704,11 +728,7 @@ void StageTileset::RemapTileConfig() {
 
     memcpy(clone, TileCfg, sizeof(TileCfg));
 
-    memset(TileCfg, 0, sizeof(TileCfg));
-    for (int i = 0; i < 0x1000; i++) {
-        memset(&TileCfg[0][i].Collision, 0xFF, sizeof(TileCfg[0][i].Collision));
-        memset(&TileCfg[1][i].Collision, 0xFF, sizeof(TileCfg[1][i].Collision));
-    }
+    ClearCollisionData(0, 0x1000);
 
     for (int i = 0; i < 0x1000; i++) {
         int oldID = i;

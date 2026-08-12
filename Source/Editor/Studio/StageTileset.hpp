@@ -51,6 +51,9 @@ struct StageTileset {
     StageTileset();
     ~StageTileset();
 
+    void ClearCollisionData(int start, int end);
+    void SetTileCount(int newTileCount);
+
     bool Load(CString filename);
     bool Import(List<char*>& filenames, ArrayList<SavedStamp*>* stampsList = NULL);
     bool Import(CString filename, ArrayList<SavedStamp*>* stampsList = NULL);

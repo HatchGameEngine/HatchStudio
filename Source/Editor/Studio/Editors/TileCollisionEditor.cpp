@@ -240,7 +240,8 @@ TileCollisionEditor::~TileCollisionEditor() {
 }
 
 void TileCollisionEditor::SetTileCount(int tileCount) {
-    Tileset->TileCount = tileCount;
+    Tileset->SetTileCount(tileCount);
+    Tileset->UpdateTileCollisionTexture_All();
 
     TileSelector* tileSelector = tileCollisionEditorPanel->tileSelector;
     tileSelector->SelectRange(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
