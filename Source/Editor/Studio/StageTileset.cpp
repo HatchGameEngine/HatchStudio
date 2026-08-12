@@ -33,8 +33,6 @@ StageTileset::StageTileset() {
     memset(TileCollisionTextures, 0, sizeof(TileCollisionTextures));
     memset(TileHashes, 0, sizeof(TileHashes));
 
-    TileImagePixelData = (Uint32*)calloc(1024 * 1024 * 4, sizeof(Uint32));
-
     UpdateTileCollisionTexture_All();
 }
 StageTileset::~StageTileset() {
@@ -241,8 +239,12 @@ bool StageTileset::Import(CString filename, ArrayList<SavedStamp*>* stampsList) 
     return Import(filenames, stampsList);
 }
 bool StageTileset::Save(CString filename) {
-    stbi_write_png(filename, 1024, 1024, 4, TileImagePixelData, 1024 * 4);
-    return true;
+    if (TileImagePixelData) {
+        stbi_write_png(filename, 1024, 1024, 4, TileImagePixelData, 1024 * 4);
+        return true;
+    }
+
+    return false;
 }
 
 bool StageTileset::UpdateTileCollisionTexture_All() {

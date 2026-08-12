@@ -257,6 +257,7 @@ void TileCollisionEditorPanel::SetTileset(StageTileset* tileset) {
 
     tileSelector->SetTileset(Tileset);
     tilePreviewWindow->Tileset = Tileset;
+    buttonSetCollisionForSelectedRange->Enabled = Tileset && Tileset->TileImagePixelData != NULL;
 }
 
 void TileCollisionEditorPanel::UpdateAngleLabel(int newAngle) {

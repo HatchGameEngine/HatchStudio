@@ -1650,7 +1650,7 @@ SceneEditor::SceneEditor() : ResourceEditor() {
     buttonImportTileset->onClick += [this](auto* a, auto* d) -> void {
         if (PromptImportTileset()) {
             tilePlacementField->RemapStampDataToBePlaced();
-            tileCollisionEditor->buttonSetCollisionForSelectedRange->Enabled = true;
+            tileCollisionEditor->SetTileset(&LinkedStage->Tileset);
             LinkedStage->Tileset.RemapTileConfig();
             LayerRemapAllTiles();
         }
