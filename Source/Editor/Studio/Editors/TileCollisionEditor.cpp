@@ -64,8 +64,7 @@ bool TileCollisionEditor::Open() {
     }
 
     // TODO: This should check if Tileset.png exists before trying to load it
-    // TODO: This should load the tileset image as-is instead of using Import
-    Tileset->Import(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Tileset.png"));
+    Tileset->Load(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Tileset.png"));
 
     tileCollisionEditorPanel->SetTileset(Tileset);
 
@@ -121,25 +120,25 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
     labelOptions->Location = { 8, optionsLabelPos + 28 };
 
     // TODO: Center the buttons
-    buttonImportTileset = new Button();
-    buttonImportTileset->Location = { 8, labelOptions->Location.Y + 28 };
-    buttonImportTileset->Size = { 200, 25 };
-    buttonImportTileset->SetText("Import Tileset Image...");
-    buttonImportTileset->onClick += [this](auto* a, auto* d) -> void {
-        if (Tileset != NULL && PromptImportTileset()) {
+    buttonSetImage = new Button();
+    buttonSetImage->Location = { 8, labelOptions->Location.Y + 28 };
+    buttonSetImage->Size = { 200, 25 };
+    buttonSetImage->SetText("Set Image...");
+    buttonSetImage->onClick += [this](auto* a, auto* d) -> void {
+        if (Tileset != NULL && PromptSetImage()) {
             tileCollisionEditorPanel->buttonSetCollisionForSelectedRange->Enabled = true;
         }
     };
 
     // TODO: Implement this.
     buttonTileCount = new Button();
-    buttonTileCount->Location = { 8, buttonImportTileset->Location.Y + 28 };
+    buttonTileCount->Location = { 8, buttonSetImage->Location.Y + 28 };
     buttonTileCount->Size = { 200, 25 };
     buttonTileCount->SetText("Set Tile Count...");
     buttonTileCount->Enabled = false;
 
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(labelOptions);
-    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonImportTileset);
+    tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonSetImage);
     tileCollisionEditorPanel->splitter->Panel2->Controls.Add(buttonTileCount);
     tileCollisionEditorPanel->splitter->Orientation = SplitOrientation::Horizontal;
     tileCollisionEditorPanel->splitter->SplitterWidth = 4;
@@ -151,21 +150,19 @@ TileCollisionEditor::TileCollisionEditor() : ResourceEditor() {
 TileCollisionEditor::~TileCollisionEditor() {
     delete tileCollisionEditorPanel;
     delete labelOptions;
-    delete buttonImportTileset;
+    delete buttonSetImage;
     delete buttonTileCount;
     delete Tileset;
 }
 
-bool TileCollisionEditor::PromptImportTileset() {
+bool TileCollisionEditor::PromptSetImage() {
     UI::SystemDialog::OpenFileData ofd;
     ofd.Title = "Open Tileset Image Files...";
     ofd.FilterPatterns.Add("*.gif");
     ofd.FilterPatterns.Add("*.png");
-    ofd.FilterPatterns.Add("*.htil");
-    ofd.Multiselect = true;
+    ofd.Multiselect = false;
 
-    // TODO: This should load the tileset image as-is instead of using Import
-    if (UI::SystemDialog::OpenFile(&ofd) && Tileset->Import(ofd.Filenames)) {
+    if (UI::SystemDialog::OpenFile(&ofd) && Tileset->Load(ofd.Filenames[0])) {
         // TODO: This should ask the user if they want to change the tile count
         // TODO: Tile count changes should properly bound TileSelector's current selection.
         tileCollisionEditorPanel->SetTileset(Tileset);

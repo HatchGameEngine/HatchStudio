@@ -32,12 +32,12 @@ struct TileCollisionEditor : Studio::ResourceEditor {
 
     int GetEditorType();
 
-    bool PromptImportTileset();
+    bool PromptSetImage();
 
     // UI stuffs
     TileCollisionEditorPanel* tileCollisionEditorPanel = NULL;
     Label* labelOptions = NULL;
-    Button* buttonImportTileset = NULL;
+    Button* buttonSetImage = NULL;
     Button* buttonTileCount = NULL;
 
     // UI Functions

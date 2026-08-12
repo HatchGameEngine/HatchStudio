@@ -26,6 +26,15 @@ TileDrawingWidget::TileDrawingWidget(TileCollisionEditorPanel* tileCollisionEdit
     this->Tileset = tileCollisionEditor->Tileset;
 }
 
+void TileDrawingWidget::SetTileset(StageTileset* tileset) {
+    Tileset = tileset;
+
+    if (Tileset != NULL) {
+        TileWidth = Tileset->TileWidth;
+        TileHeight = Tileset->TileHeight;
+    }
+}
+
 int TileDrawingWidget::GetPlane() {
     if (tileCollisionEditor->radioButtonShowA->Checked)
         return 0;
@@ -185,20 +194,19 @@ void TileDrawingWidget::Render() {
 
     UI::Graphics::Renderer::DrawRect(&bounds, Color(0x000000, 0xFF));
 
-    if (Tileset) {
+    if (Tileset && Tileset->TileCount > 0) {
         if (tileSelector->SelectedTileID >= 0) {
-            const int TileSize = 16;
-            const int columnMask = 63;
-            const int columnCount = 64;
-            const int columnBitshift = 6;
             int t = tileSelector->SelectedTileID;
+            int sheetCols = Tileset->WidthInTiles;
 
-            int pxSz = bounds.w / TileSize;
+            int pxSz = bounds.w / TileWidth;
 
-            SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
-            SDL_Rect dst = bounds;
-            UI::Graphics::Renderer::DstRectAdjustment(&dst);
-            SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+            if (Tileset->TileImageTexture != NULL) {
+                SDL_Rect src = { (t % sheetCols) * TileWidth, (t / sheetCols) * TileHeight, TileWidth, TileHeight };
+                SDL_Rect dst = bounds;
+                UI::Graphics::Renderer::DstRectAdjustment(&dst);
+                SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+            }
 
             EditableTileConfig* tileData = &Tileset->TileCfg[p][t];
 

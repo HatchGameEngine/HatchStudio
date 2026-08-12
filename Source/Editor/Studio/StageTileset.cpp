@@ -21,6 +21,9 @@
 #include <Studio/Editors/SceneEditor.hpp>
 #include <Studio/StageTileset.hpp>
 
+#define DEFAULT_SHEET_WIDTH 1024
+#define DEFAULT_SHEET_HEIGHT 1024
+
 #define STAMP_FILENAME_PREFIX "Stamp_"
 
 StageTileset::StageTileset() {
@@ -32,6 +35,9 @@ StageTileset::StageTileset() {
 
     memset(TileCollisionTextures, 0, sizeof(TileCollisionTextures));
     memset(TileHashes, 0, sizeof(TileHashes));
+
+    ImageWidth = DEFAULT_SHEET_WIDTH;
+    ImageHeight = DEFAULT_SHEET_HEIGHT;
 
     UpdateTileCollisionTexture_All();
 }
@@ -46,11 +52,64 @@ StageTileset::~StageTileset() {
         free(TileImagePixelData);
 }
 
+// Simply loads an image from the given filename.
+bool StageTileset::Load(CString filename) {
+    int tileset_w = 1;
+    int tileset_h = 1;
+    int tileset_comp;
+
+    unsigned char* tileset_imagedata = stbi_load(filename, &tileset_w, &tileset_h, &tileset_comp, STBI_rgb_alpha);
+    if (!tileset_imagedata) {
+        Diagnostics::SetError(stbi_failure_reason());
+        return false;
+    }
+
+    // Temporary until HatchStudio supports other tile sizes.
+    if (tileset_w % 16 != 0 || tileset_h % 16 != 0) {
+        Diagnostics::SetError("Image \"%s\" dimensions must be a power of 16.", filename);
+        return false;
+    }
+
+    const int srcRowCount = tileset_h / 16;
+    const int srcColumnCount = tileset_w / 16;
+
+    if (srcRowCount == 0 || srcColumnCount == 0) {
+        stbi_image_free(tileset_imagedata);
+        return false;
+    }
+
+    Uint32* newTilesetImageData = (Uint32*)calloc(tileset_w * tileset_h * 4, sizeof(Uint32));
+    if (!newTilesetImageData) {
+        Diagnostics::SetError("Could not allocate space for tileset image data.");
+        return false;
+    }
+
+    memcpy(newTilesetImageData, tileset_imagedata, tileset_w * tileset_h * 4);
+
+    stbi_image_free(tileset_imagedata);
+
+    ImageWidth = tileset_w;
+    ImageHeight = tileset_h;
+    TileWidth = 16;
+    TileHeight = 16;
+    WidthInTiles = ImageWidth / TileWidth;
+    HeightInTiles = ImageHeight / TileHeight;
+    TileCount = WidthInTiles * HeightInTiles;
+
+    // Update tile image data
+    Studio::Textures::CreateTextureFromSTBI(&TileImageTexture, (Uint8*)newTilesetImageData, tileset_w, tileset_h);
+
+    if (TileImagePixelData)
+        free(TileImagePixelData);
+    TileImagePixelData = newTilesetImageData;
+
+    return true;
+}
+
 bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stampsList) {
     int maxTileCount = TILE_IDENT_MASK + 1;
 
     const int MAX_SHEET_HEIGHT = 1024;
-    const int MAX_TILE_PIXELS = 1024 * 1024;
 
     const int dstColumnCount = 64;
     const int dstColumnMask = 63;
@@ -63,7 +122,7 @@ bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stamps
     Uint32* tileSrc;
     Uint32* tileDst;
 
-    Uint32* newTilesetImageData = (Uint32*)calloc(1024 * 1024 * 4, sizeof(Uint32));
+    Uint32* newTilesetImageData = (Uint32*)calloc(DEFAULT_SHEET_WIDTH * DEFAULT_SHEET_HEIGHT * 4, sizeof(Uint32));
     if (!newTilesetImageData) {
         Diagnostics::SetError("Could not allocate space for tileset image data.");
         return false;
@@ -95,12 +154,23 @@ bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stamps
         const int srcRowCount = tileset_h / 16;
         const int srcColumnCount = tileset_w / 16;
 
-        if (!tileArray || srcRowCount == 0 || srcColumnCount == 0)
-            return false;
+        if (srcRowCount == 0 || srcColumnCount == 0) {
+            stbi_image_free(tileset_imagedata);
+            continue;
+        }
+        // Temporary until HatchStudio supports other tile sizes.
+        else if (tileset_w % 16 != 0 || tileset_h % 16 != 0) {
+            Diagnostics::SetError("Image \"%s\" dimensions must be a power of 16.", filenames[i]);
+            stbi_image_free(tileset_imagedata);
+            continue;
+        }
 
         tileArray = (Tile*)realloc(tileArray, srcRowCount * srcColumnCount * sizeof(Tile));
         if (!tileArray) {
             Diagnostics::SetError("Could not allocate space for stamp tile data.");
+            stbi_image_free(tileset_imagedata);
+            free(oldTileHashes);
+            free(newTilesetImageData);
             return false;
         }
 
@@ -191,6 +261,12 @@ bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stamps
     if (tile == 0)
         goto FreeMemoryAndFail;
 
+    ImageWidth = DEFAULT_SHEET_WIDTH;
+    ImageHeight = DEFAULT_SHEET_HEIGHT;
+    TileWidth = 16;
+    TileHeight = 16;
+    WidthInTiles = ImageWidth / TileWidth;
+    HeightInTiles = ImageHeight / TileHeight;
     TileCount = tile;
 
     // Update tile image data
@@ -198,8 +274,6 @@ bool StageTileset::Import(List<char*>& filenames, ArrayList<SavedStamp*>* stamps
 
     // Create the tile remapping array
     for (int oldID = 0; oldID < 0x1000; oldID++) {
-        // Set conversion value to default of "no-conversion"
-        TileRemapArray[oldID] = -1;
         // Set conversion value to pass-through
         TileRemapArray[oldID] = oldID;
 
@@ -240,7 +314,7 @@ bool StageTileset::Import(CString filename, ArrayList<SavedStamp*>* stampsList) 
 }
 bool StageTileset::Save(CString filename) {
     if (TileImagePixelData) {
-        stbi_write_png(filename, 1024, 1024, 4, TileImagePixelData, 1024 * 4);
+        stbi_write_png(filename, ImageWidth, ImageHeight, 4, TileImagePixelData, ImageWidth * 4);
         return true;
     }
 
@@ -252,14 +326,12 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
     collisionImagePalette[0] = Color(0x000000, 0x00);
     collisionImagePalette[1] = Color(0xFFFFFF, 0xFF);
 
-    const int MAX_TILE_PIXELS = 0x1000 * TILE_SIZE * TILE_SIZE;
+    const int MAX_TILE_PIXELS = 0x1000 * TileWidth * TileHeight;
 
     const int dstColumnMask = HATCH_TILESHEET_ROWSIZE - 1;
     const int dstColumnCount = HATCH_TILESHEET_ROWSIZE;
-    // const int dstColumnBitshift = 6;
 
     const int planeCount = 2;
-    // const int orientationCount = 4;
 
     Uint8* tileCollisionImageData = (Uint8*)calloc(planeCount, MAX_TILE_PIXELS);
     if (!tileCollisionImageData) {
@@ -275,10 +347,9 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
             EditableTileConfig* tileData = &TileCfg[p][tile];
 
             int yDst = 0;
-            int yDstFY = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1);
-            for (int row = 0; row < TILE_SIZE; row++) {
+            for (int row = 0; row < TileHeight; row++) {
                 if (tileData->Orientation) {
-                    for (int ix = 0; ix <= 15; ix++) {
+                    for (int ix = 0; ix < TileWidth; ix++) {
                         auto col = tileData->Collision[ix];
                         if (col != 0xFF && row <= col) {
                             tileDst[yDst + ix] = 1;
@@ -286,7 +357,7 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
                     }
                 }
                 else {
-                    for (int ix = 0; ix <= 15; ix++) {
+                    for (int ix = 0; ix < TileWidth; ix++) {
                         auto col = tileData->Collision[ix];
                         if (col != 0xFF && row >= col) {
                             tileDst[yDst + ix] = 1;
@@ -295,7 +366,6 @@ bool StageTileset::UpdateTileCollisionTexture_All() {
                 }
 
                 yDst += dstColumnCount * TILE_SIZE;
-                yDstFY -= dstColumnCount * TILE_SIZE;
             }
 
             // Move to next tile
@@ -321,14 +391,7 @@ bool StageTileset::UpdateTileCollisionTexture(int plane, int tileID) {
     collisionImagePalette[0] = Color(0x000000, 0x00);
     collisionImagePalette[1] = Color(0xFFFFFF, 0xFF);
 
-    // const int dstColumnMask = 0;
-    const int dstColumnCount = 1;
-    // const int dstColumnBitshift = 6;
-
-    // const int planeCount = 2;
-    // const int orientationCount = 4;
-
-    const int MAX_TILE_PIXELS = TILE_SIZE * TILE_SIZE;
+    const int MAX_TILE_PIXELS = TileWidth * TileHeight;
 
     Uint8* tileCollisionImageData = (Uint8*)calloc(1, MAX_TILE_PIXELS);
     if (!tileCollisionImageData) {
@@ -339,10 +402,9 @@ bool StageTileset::UpdateTileCollisionTexture(int plane, int tileID) {
     EditableTileConfig* tileData = &TileCfg[plane][tileID];
 
     int yDst = 0;
-    int yDstFY = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1);
-    for (int row = 0; row < TILE_SIZE; row++) {
+    for (int row = 0; row < TileHeight; row++) {
         if (tileData->Orientation) {
-            for (int ix = 0; ix <= 15; ix++) {
+            for (int ix = 0; ix < TileWidth; ix++) {
                 auto col = tileData->Collision[ix];
                 if (col != 0xFF && row <= col) {
                     tileCollisionImageData[yDst + ix] = 1;
@@ -350,7 +412,7 @@ bool StageTileset::UpdateTileCollisionTexture(int plane, int tileID) {
             }
         }
         else {
-            for (int ix = 0; ix <= 15; ix++) {
+            for (int ix = 0; ix < TileWidth; ix++) {
                 auto col = tileData->Collision[ix];
                 if (col != 0xFF && row >= col) {
                     tileCollisionImageData[yDst + ix] = 1;
@@ -358,16 +420,15 @@ bool StageTileset::UpdateTileCollisionTexture(int plane, int tileID) {
             }
         }
 
-        yDst += dstColumnCount * TILE_SIZE;
-        yDstFY -= dstColumnCount * TILE_SIZE;
+        yDst += TILE_SIZE;
     }
 
     // Convert to textures
     SDL_Rect dstRect = {
-        (tileID & (HATCH_TILESHEET_ROWSIZE - 1)) * HATCH_TILESIZE,
-        (tileID / HATCH_TILESHEET_ROWSIZE) * HATCH_TILESIZE,
-        HATCH_TILESIZE,
-        HATCH_TILESIZE,
+        (tileID % HATCH_TILESHEET_ROWSIZE) * TileWidth,
+        (tileID / HATCH_TILESHEET_ROWSIZE) * TileHeight,
+        TileWidth,
+        TileHeight
     };
 
     if (!TileCollisionTextures[plane]) {
@@ -377,7 +438,7 @@ bool StageTileset::UpdateTileCollisionTexture(int plane, int tileID) {
     }
     else {
         Studio::Textures::UpdateTextureFromData(&TileCollisionTextures[plane],
-            tileCollisionImageData, collisionImagePalette, HATCH_TILESIZE, HATCH_TILESIZE, &dstRect);
+            tileCollisionImageData, collisionImagePalette, TileWidth, TileHeight, &dstRect);
     }
 
     free(tileCollisionImageData);

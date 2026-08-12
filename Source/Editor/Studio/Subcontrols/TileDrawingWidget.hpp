@@ -30,9 +30,13 @@ struct TileDrawingWidget : Control {
     Vector2 dragPxStart;
     Vector2 dragPxEnd;
 
+    int TileWidth = 16;
+    int TileHeight = 16;
     int TileAngle = 0;
 
     TileDrawingWidget(TileCollisionEditorPanel* tileCollisionEditor);
+
+    void SetTileset(StageTileset* tileset);
 
     int GetPlane();
 

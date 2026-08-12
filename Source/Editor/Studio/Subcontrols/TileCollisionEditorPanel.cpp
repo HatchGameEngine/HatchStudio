@@ -255,9 +255,9 @@ TileCollisionEditorPanel::~TileCollisionEditorPanel() {
 void TileCollisionEditorPanel::SetTileset(StageTileset* tileset) {
     Tileset = tileset;
 
-    tileSelector->SetTileset(Tileset);
-    tilePreviewWindow->Tileset = Tileset;
-    buttonSetCollisionForSelectedRange->Enabled = Tileset && Tileset->TileImagePixelData != NULL;
+    tileSelector->SetTileset(tileset);
+    tilePreviewWindow->SetTileset(tileset);
+    buttonSetCollisionForSelectedRange->Enabled = tileset && tileset->TileImagePixelData != NULL;
 }
 
 void TileCollisionEditorPanel::UpdateAngleLabel(int newAngle) {
@@ -323,12 +323,13 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     int p = tilePreviewWindow->GetPlane();
     EditableTileConfig* tileData = &Tileset->TileCfg[p][i];
 
-    int tileSize = 16;
-    int columnCount = 64;
-    int tileSheetWidth = tileSize * columnCount;
+    int imageWidth = Tileset->ImageWidth;
+    int tileWidth = Tileset->TileWidth;
+    int tileHeight = Tileset->TileHeight;
+    int columnCount = Tileset->WidthInTiles;
 
-    int tileImageX = (i % columnCount) * tileSize;
-    int tileImageY = (i / columnCount) * tileSize;
+    int tileImageX = (i % columnCount) * tileWidth;
+    int tileImageY = (i / columnCount) * tileHeight;
     bool isCeiling = false;
     bool hasCollision = true;
     Uint32* pxData = Tileset->TileImagePixelData;
@@ -336,14 +337,14 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     // Determine whether is ceiling or not.
     int topCount = 0;
     int bottomCount = 0;
-    for (int p = tileImageX; p < tileImageX + tileSize; p++) {
+    for (int p = tileImageX; p < tileImageX + tileWidth; p++) {
         int px;
 
-        px = (p + (tileImageY) * tileSheetWidth);
+        px = (p + (tileImageY) * imageWidth);
         if ((pxData[px] & 0xFF000000) > 0)
             topCount++;
 
-        px = (p + (tileImageY + tileSize - 1) * tileSheetWidth);
+        px = (p + (tileImageY + tileHeight - 1) * imageWidth);
         if ((pxData[px] & 0xFF000000) > 0)
             bottomCount++;
     }
@@ -361,20 +362,20 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     if (isCeiling) {
         // If ceiling, start checking from bottom and vice-versa
         int fx = 0;
-        for (int p = tileImageX; p < tileImageX + tileSize; p++) {
+        for (int p = tileImageX; p < tileImageX + tileWidth; p++) {
             int value = 0xFF;
-            for (int c = 0, pY = (p + (tileImageY + tileSize - 1) * tileSheetWidth);
-                c < tileSize;
-                c++, pY -= tileSheetWidth) {
+            for (int c = 0, pY = (p + (tileImageY + tileHeight - 1) * imageWidth);
+                c < tileHeight;
+                c++, pY -= imageWidth) {
                 if ((pxData[pY] & 0xFF000000) > 0) {
-                    value = tileSize - 1 - c;
+                    value = tileHeight - 1 - c;
                     break;
                 }
             }
 
             tileData->Collision[fx] = value;
 
-            if (value != 0xFF && value != tileSize - 1) {
+            if (value != 0xFF && value != tileHeight - 1) {
                 if (firstValue == -1)
                     firstValue = value + 1;
 
@@ -386,11 +387,11 @@ void TileCollisionEditorPanel::DoAutoTile(int i) {
     }
     else {
         int fx = 0;
-        for (int p = tileImageX; p < tileImageX + tileSize; p++) {
+        for (int p = tileImageX; p < tileImageX + tileWidth; p++) {
             int value = 0xFF;
-            for (int c = 0, pY = (p + (tileImageY) * tileSheetWidth);
-                c < tileSize;
-                c++, pY += tileSheetWidth) {
+            for (int c = 0, pY = (p + (tileImageY) * imageWidth);
+                c < tileHeight;
+                c++, pY += imageWidth) {
                 if ((pxData[pY] & 0xFF000000) > 0) {
                     value = c;
                     break;

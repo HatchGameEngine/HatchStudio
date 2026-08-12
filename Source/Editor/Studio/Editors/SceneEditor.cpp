@@ -1681,7 +1681,7 @@ SceneEditor::SceneEditor() : ResourceEditor() {
     // splitterMain
     splitterMain->Dock = DOCK_FILL;
     splitterMain->Size = { 1000, 1000 };
-    splitterMain->SplitterDistance = tileSelector->Padding.Horizontal() + tileSelector->TileSpace * 16 + 16;
+    splitterMain->SplitterDistance = tileSelector->Padding.Horizontal() + tileSelector->TileSpaceH * 16 + 16;
     splitterMain->BackColor = Color(0x000000, 0x00);
     splitterMain->Panel1->BackColor = Color(0x000000, 0x00);
     splitterMain->Panel2->BackColor = Color(0x000000, 0x00);
@@ -1689,7 +1689,7 @@ SceneEditor::SceneEditor() : ResourceEditor() {
 
     splitterMain->Panel1->Controls.Add(leftTab);
     splitterMain->Panel2->Controls.Add(splitterField);
-    splitterMain->Panel1MinSize = tileSelector->Padding.Horizontal() + tileSelector->TileSize + 16;
+    splitterMain->Panel1MinSize = tileSelector->Padding.Horizontal() + tileSelector->TileWidth + 16;
 
     // splitterField
     splitterField->Dock = DOCK_FILL;

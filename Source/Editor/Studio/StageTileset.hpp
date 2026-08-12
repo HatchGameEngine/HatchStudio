@@ -16,18 +16,23 @@
 #define MAGIC_TILESET_HATCH 0x4C4F4354
 #define MAGIC_TILESET_HATCHLITE 0x4C4F4348
 
+#define HATCH_TILESHEET_ROWSIZE 64
+#define HATCH_TILESHEET_COLSIZE 64
+
 struct StageTileset {
     struct TileImageHash {
         Uint32 FLIP_NONE;
     };
 
-    const int HATCH_TILESIZE = TILE_SIZE;
-    const int HATCH_TILESHEET_ROWSIZE = 64;
-    const int HATCH_TILESHEET_COLSIZE = 64;
-    const int HATCH_TILESHEET_WIDTH = HATCH_TILESHEET_ROWSIZE * HATCH_TILESIZE;
-    const int HATCH_TILESHEET_HEIGHT = HATCH_TILESHEET_COLSIZE * HATCH_TILESIZE;
-
+    int WidthInTiles = 0;
+    int HeightInTiles = 0;
+    int TileWidth = 16;
+    int TileHeight = 16;
     int TileCount = 0;
+
+    int ImageWidth = 0;
+    int ImageHeight = 0;
+
     SDL_Texture* TileImageTexture = NULL;
     SDL_Texture* TileCollisionTextures[2];
 
@@ -38,12 +43,14 @@ struct StageTileset {
 
     int TileRemapArray[0x1000];
 
-    // RSDK Max Tile Count: 0x400 (1024)
-    // HatchLite (Prospective) Max Tile Count: 0x1000 (4096)
+    // RSDK Max Tile Count: 0x400 (1024, or 2^10)
+    // Hatch Max Tile Count: 0x1000000 (16777216, or 2^24)
+    // HatchLite (Prospective) Max Tile Count: 0x1000 (4096, or 2^12)
 
     StageTileset();
     ~StageTileset();
 
+    bool Load(CString filename);
     bool Import(List<char*>& filenames, ArrayList<SavedStamp*>* stampsList = NULL);
     bool Import(CString filename, ArrayList<SavedStamp*>* stampsList = NULL);
     bool Save(CString filename);

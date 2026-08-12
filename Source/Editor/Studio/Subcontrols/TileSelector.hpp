@@ -19,9 +19,12 @@
 struct TileSelector : Panel {
     StageTileset* Tileset = NULL;
 
-    int TileSize = 16;
-    int TileSpace = 17;
+    int TileWidth = 16;
+    int TileHeight = 16;
+    int TileSpaceH = 17;
+    int TileSpaceV = 17;
     int Columns = 16;
+    int Rows = 16;
 
     int SelectedTileID = 0;
     int SelectedTileRange_Start = 0;

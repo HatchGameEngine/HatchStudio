@@ -27,7 +27,8 @@ TileSelector::TileSelector(StageTileset* tileset) : Panel() {
     Margin = 1;
     Padding = 7;
 
-    TileSpace = TileSize + Margin.Left;
+    TileSpaceH = TileWidth + Margin.Left;
+    TileSpaceV = TileHeight + Margin.Top;
 
     DoHScroll = false;
     DoVScroll = true;
@@ -42,6 +43,14 @@ TileSelector::TileSelector(StageTileset* tileset) : Panel() {
 
 void TileSelector::SetTileset(StageTileset* tileset) {
     Tileset = tileset;
+
+    if (Tileset != NULL) {
+        TileWidth = Tileset->TileWidth;
+        TileHeight = Tileset->TileHeight;
+
+        TileSpaceH = TileWidth + Margin.Left;
+        TileSpaceV = TileHeight + Margin.Top;
+    }
 }
 
 void TileSelector::OnMouseDown(MouseEventArgs* e) {
@@ -60,7 +69,7 @@ void TileSelector::OnMouseDown(MouseEventArgs* e) {
             my >= 0 &&
             mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
             my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-            int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, Tileset->TileCount);
+            int tileIndex = M_MIN((mx / TileSpaceH) + (my / TileSpaceV) * Columns, Tileset->TileCount);
             SelectRange(tileIndex, tileIndex);
             Select(tileIndex);
         }
@@ -84,7 +93,7 @@ void TileSelector::OnMouseMove(MouseEventArgs* e) {
             my >= 0 &&
             mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
             my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-            int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, Tileset->TileCount);
+            int tileIndex = M_MIN((mx / TileSpaceH) + (my / TileSpaceV) * Columns, Tileset->TileCount);
             SelectRange(SelectedTileRange_Start, tileIndex);
             Select(tileIndex);
         }
@@ -102,17 +111,19 @@ void TileSelector::RequestUpdatedBounds() {
 
     auto Bounds = GetScreenRect();
 
-    TileSpace = TileSize + Margin.Left;
+    TileSpaceH = TileWidth + Margin.Left;
+    TileSpaceV = TileHeight + Margin.Top;
 
-    Columns = (Size.Get().W - (Padding.Horizontal() + VScrollControl->Size.Get().W)) / TileSpace;
+    Columns = (Size.Get().W - (Padding.Horizontal() + VScrollControl->Size.Get().W)) / TileSpaceH;
+    Rows = (Size.Get().H - Padding.Vertical()) / TileSpaceV;
+
     Columns = M_MAX(Columns, 1);
+    Rows = M_MAX(Rows, 1);
 
     ContentBounds.x = 0;
     ContentBounds.y = 0;
-    ContentBounds.w = TileSpace * Columns - Margin.Left + Padding.Horizontal();
-    ContentBounds.h = TileSpace * ((Tileset->TileCount + (Columns - 1)) / Columns) - Margin.Left + Padding.Vertical();
-
-    // Bounds.w = ContentBounds.w + VScrollControl->Bounds.w;
+    ContentBounds.w = TileSpaceH * Columns - Margin.Left + Padding.Horizontal();
+    ContentBounds.h = TileSpaceV * Rows - Margin.Top + Padding.Vertical();
 }
 void TileSelector::ResizeChildren() {
     HideEmptyVScroll = !Tileset || Tileset->TileCount == 0;
@@ -142,8 +153,8 @@ void TileSelector::ResizeChildren() {
     VScrollControl->Minimum = 0;
     VScrollControl->Maximum = ContentBounds.h - DisplayBounds.h;
 
-    VScrollControl->SmallChange = TileSpace;
-    VScrollControl->LargeChange = TileSpace * 4;
+    VScrollControl->SmallChange = TileSpaceV;
+    VScrollControl->LargeChange = TileSpaceV * 4;
 
     Control::ResizeChildren();
 }
@@ -269,7 +280,7 @@ void TileSelector::Render() {
 
     auto Bounds = GetScreenRect();
 
-    if (!Tileset || Tileset->TileCount == 0) {
+    if (!Tileset) {
         ::Size lineSz1, lineSz2;
         UI::Graphics::Font::Face* Typeface = UI::Graphics::Font::Arial[12];
         UI::Graphics::Renderer::MeasureFont(&DefaultTextLine1, Typeface, &lineSz1.W, &lineSz1.H);
@@ -282,34 +293,40 @@ void TileSelector::Render() {
         SDL_Rect buffer;
         ClipStart(&buffer, &Bounds);
 
-        const int columnMask = 63;
-        const int columnCount = 64;
-        const int columnBitshift = 6;
-
-        int rows = TileIndexToRow(Tileset->TileCount + Columns - 1);
-        if (rows < 1)
-            rows = 1;
-
         UI::Graphics::Renderer::DrawRect(
             Bounds.x + Padding.Left - 1,
             Bounds.y + Padding.Top - 1 - VScrollControl->Value,
-            1 + Columns * TileSpace,
-            1 + rows * TileSpace, Color(0x000000, 0xFF));
+            1 + Columns * TileSpaceH,
+            1 + Rows * TileSpaceV, Color(0x000000, 0xFF));
 
         SDL_SetTextureColorMod(Tileset->TileCollisionTextures[TileCollisionPlane], 0xFF, 0xFF, 0xFF);
 
-        int tileSpc = TileSpace;
         for (int t = 0; t < Tileset->TileCount; t++) {
-            int tX = Padding.Left + TileIndexToColumn(t) * tileSpc;
-            int tY = Padding.Top + TileIndexToRow(t) * tileSpc - VScrollControl->Value;
-            SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
-            SDL_Rect dst = { Bounds.x + tX, Bounds.y + tY, TileSize, TileSize };
+            int tX = Padding.Left + TileIndexToColumn(t) * TileSpaceH;
+            int tY = Padding.Top + TileIndexToRow(t) * TileSpaceV - VScrollControl->Value;
+            SDL_Rect dst = { Bounds.x + tX, Bounds.y + tY, TileWidth, TileHeight };
 
             UI::Graphics::Renderer::DstRectAdjustment(&dst);
-            if (ShowTileGraphics) {
+            if (ShowTileGraphics && Tileset->TileImageTexture != NULL) {
+                int cols = Tileset->WidthInTiles;
+
+                SDL_Rect src = {
+                    (t % cols) * TileWidth,
+                    (t / cols) * TileHeight,
+                    TileWidth,
+                    TileHeight
+                };
+
                 SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileImageTexture, &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
             }
-            if (ShowTileCollision) {
+            if (ShowTileCollision && Tileset->TileCollisionTextures[TileCollisionPlane] != NULL) {
+                SDL_Rect src = {
+                    (t % HATCH_TILESHEET_ROWSIZE) * TileWidth,
+                    (t / HATCH_TILESHEET_ROWSIZE) * TileHeight,
+                    TileWidth,
+                    TileHeight
+                };
+
                 SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Tileset->TileCollisionTextures[TileCollisionPlane], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
             }
         }
@@ -318,7 +335,6 @@ void TileSelector::Render() {
             Color colorInner = Color(0x7F7F7F, 0xFF);
             Color colorOuter = Color(0xFFFFFF, 0xFF);
             int indexStart, indexEnd;
-            int s = TileSpace * 2;
 
             GetHighlightBounds(&indexStart, &indexEnd);
 
@@ -338,8 +354,8 @@ void TileSelector::Render() {
                 bitFlag = 0;
                 cx = TileIndexToColumn(t);
                 cy = TileIndexToRow(t);
-                tX = Padding.Left + cx * tileSpc;
-                tY = Padding.Top + cy * tileSpc - VScrollControl->Value;
+                tX = Padding.Left + cx * TileSpaceH;
+                tY = Padding.Top + cy * TileSpaceV - VScrollControl->Value;
 
                 // Cardinal directions
                 if (IsCellWithinHighlight(cx, cy - 1))
@@ -360,7 +376,7 @@ void TileSelector::Render() {
                 if ((bitFlag & (CHK_BOTTOM | CHK_RIGHT)) == (CHK_BOTTOM | CHK_RIGHT) && IsCellWithinHighlight(cx + 1, cy + 1))
                     bitFlag |= CHK_BOTTOM_RIGHT;
 
-                SDL_Rect dst = { Bounds.x + tX, Bounds.y + tY, TileSize, TileSize };
+                SDL_Rect dst = { Bounds.x + tX, Bounds.y + tY, TileWidth, TileHeight };
                 DrawHighlightSection(&dst, bitFlag, colorInner, colorOuter);
             }
         }
