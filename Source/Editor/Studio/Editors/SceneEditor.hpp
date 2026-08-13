@@ -20,7 +20,9 @@
 
 #include <vector>
 
+#include <Studio/Enums.hpp>
 #include <Studio/Impl.hpp>
+#include <Studio/Stamp.hpp>
 #include <Studio/Structs.hpp>
 
 #include <UI/Graphics/Font.hpp>
@@ -46,6 +48,9 @@
 #include <UI/Filesystem/Paths.hpp>
 #include <UI/System/Application.hpp>
 
+#include <Studio/Subcontrols/TileCollisionEditorPanel.hpp>
+#include <Studio/Subcontrols/TileSelector.hpp>
+
 #include <Studio/Editors/ResourceEditor.hpp>
 #include <Studio/Project.hpp>
 
@@ -58,273 +63,6 @@ struct SceneEditor : Studio::ResourceEditor {
     #pragma endregion
 
     #pragma region Structures
-    struct Stamp {
-        int Width;
-        int Height;
-        Tile Data[];
-
-        static Stamp* FromLayer(SceneEditor* scene, int layerIndex, int x, int y, int w, int h) {
-            Layer* layer = &scene->Layers[layerIndex];
-
-            // Bound limits, but don't bound yourself
-            if (x < 0) {
-                w += x;
-                x = 0;
-            }
-            if (y < 0) {
-                h += y;
-                y = 0;
-            }
-            w = M_MIN(w, (int)layer->Width - x);
-            h = M_MIN(h, (int)layer->Height - y);
-
-            if (!w || !h)
-                return NULL;
-
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileRow = &layer->Tiles[x + (y << layer->WidthInBits)];
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = tileRow[tx];
-                }
-                tileRow += layer->DataWidth;
-            }
-
-            return stamp;
-        }
-        static void   ToLayer(Stamp* stamp, SceneEditor* scene, int layerIndex, int x, int y, bool doEmptyTileWrite) {
-            int w = stamp->Width, h = stamp->Height;
-            Layer* layer = &scene->Layers[layerIndex];
-
-            int srcx = 0;
-            int srcy = 0;
-
-            // Bound limits
-            if (x < 0) {
-                srcx = -x;
-                w -= srcx;
-                x = 0;
-            }
-            if (y < 0) {
-                srcy = -y;
-                h -= srcy;
-                y = 0;
-            }
-            w = M_MIN(w, (int)layer->Width - x);
-            h = M_MIN(h, (int)layer->Height - y);
-
-            if (!w || !h)
-                return;
-
-            Tile* tileRow = &layer->Tiles[x + (y << layer->WidthInBits)];
-            Tile* tileSrc = &stamp->Data[srcx + (srcy * stamp->Width)];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    if (*tileSrc != TILE_EMPTY || doEmptyTileWrite)
-                        tileRow[tx] = *tileSrc;
-                    tileSrc++;
-                }
-                tileSrc += stamp->Width - w;
-                tileRow += layer->DataWidth;
-            }
-        }
-
-        static Stamp* Clone(Stamp* stamp) {
-            Stamp* stampNew = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * stamp->Width * stamp->Height);
-            if (!stampNew)
-                return NULL;
-
-            memcpy(stampNew, stamp, sizeof(Stamp) + sizeof(Tile) * stamp->Width * stamp->Height);
-            return stampNew;
-        }
-        static Stamp* FromRepeatTile(Tile tile, int w, int h) {
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = tile;
-                }
-            }
-
-            return stamp;
-        }
-        static Stamp* FromTileArray(Tile* tile, int w, int h) {
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = *(tile++);
-                }
-            }
-
-            return stamp;
-        }
-        static Stamp* CreateEmpty(int w, int h) {
-            Stamp* stamp = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * w * h);
-            if (!stamp)
-                return NULL;
-
-            stamp->Width = w;
-            stamp->Height = h;
-
-            Tile* tileDst = &stamp->Data[0];
-
-            // Copy
-            for (int ty = 0; ty < h; ty++) {
-                for (int tx = 0; tx < w; tx++) {
-                    *(tileDst++) = TILE_EMPTY;
-                }
-            }
-
-            return stamp;
-        }
-
-        static Stamp* FromStampFlipped(Stamp* stamp, bool flipHorizontal, bool flipVertical) {
-            Stamp* stampNew = (Stamp*)malloc(sizeof(Stamp) + sizeof(Tile) * stamp->Width * stamp->Height);
-            if (!stampNew)
-                return NULL;
-
-            Tile* tileDst = &stampNew->Data[0];
-            if (flipHorizontal && flipVertical) {
-                Tile* tileSrcRow = &stamp->Data[stamp->Width * (stamp->Height - 1)];
-                for (int row = 0; row < stamp->Height; row++) {
-                    Tile* tileSrc = &tileSrcRow[stamp->Width - 1];
-                    for (int col = 0; col < stamp->Width; col++) {
-                        *tileDst = *tileSrc;
-                        if (*tileDst != TILE_EMPTY) {
-                            tileDst->FlipX ^= 1;
-                            tileDst->FlipY ^= 1;
-                        }
-                        tileDst++;
-                        tileSrc--;
-                    }
-                    tileSrcRow -= stamp->Width;
-                }
-            }
-            else if (flipHorizontal) {
-                Tile* tileSrcRow = &stamp->Data[0];
-                for (int row = 0; row < stamp->Height; row++) {
-                    Tile* tileSrc = &tileSrcRow[stamp->Width - 1];
-                    for (int col = 0; col < stamp->Width; col++) {
-                        *tileDst = *tileSrc;
-                        if (*tileDst != TILE_EMPTY) {
-                            tileDst->FlipX ^= 1;
-                        }
-                        tileDst++;
-                        tileSrc--;
-                    }
-                    tileSrcRow += stamp->Width;
-                }
-            }
-            else if (flipVertical) {
-                Tile* tileSrcRow = &stamp->Data[stamp->Width * (stamp->Height - 1)];
-                for (int row = 0; row < stamp->Height; row++) {
-                    Tile* tileSrc = &tileSrcRow[0];
-                    for (int col = 0; col < stamp->Width; col++) {
-                        *tileDst = *tileSrc;
-                        if (*tileDst != TILE_EMPTY) {
-                            tileDst->FlipY ^= 1;
-                        }
-                        tileDst++;
-                        tileSrc++;
-                    }
-                    tileSrcRow -= stamp->Width;
-                }
-            }
-
-            memcpy(stampNew, stamp, sizeof(Stamp));
-            return stampNew;
-        }
-
-        static Stamp* FromStreamRead(Stream* stream) {
-            // Read size
-            int width = stream->ReadUInt16();
-            int height = stream->ReadUInt16();
-
-            // Create stamp
-            Stamp* Data = Stamp::CreateEmpty(width, height);
-
-            // Read tile data
-            // Uint32 dataRead =
-			stream->ReadCompressed(&Data->Data[0]);
-            /*if (dataRead == width * height * sizeof(Tile))
-                printf("perfect stamp tile data read!");
-            else
-                printf("invalid stamp tile data read!");*/
-
-            return Data;
-        }
-        void Write(Stream* stream) {
-            // Write size
-            stream->WriteUInt16(this->Width);
-            stream->WriteUInt16(this->Height);
-
-            // Write tile data
-            stream->WriteCompressed(&this->Data[0], this->Width * this->Height * sizeof(Tile));
-        }
-    };
-    struct SavedStamp {
-        String Title;
-        Stamp* Data;
-
-        void Read(Stream* stream) {
-            char title[256];
-
-            // Read magic
-            Uint32 magic = stream->ReadUInt32();
-
-            // Read title
-            stream->ReadHeaderedString(title);
-            Strings::FromCString(&Title, title, 0);
-
-            Data = Stamp::FromStreamRead(stream);
-        }
-        void Write(Stream* stream) {
-            char title[256];
-
-            // Write magic
-            stream->WriteUInt32(0x00000000);
-
-            // Write title
-            if (Title.Length > 255)
-                Title.Length = 255;
-            Strings::ToCString(title, &Title);
-            stream->WriteHeaderedString(title);
-
-            Data->Write(stream);
-        }
-
-        ~SavedStamp() {
-            free(Data);
-        }
-    };
     struct Version {
         Uint8 major;
         Uint8 minor;
@@ -350,7 +88,7 @@ struct SceneEditor : Studio::ResourceEditor {
             _tileX = x;
             _tileY = y;
             _toStamp = toStamp;
-            _originalData = Stamp::FromLayer(scene, layerIndex, x, y, toStamp->Width, toStamp->Height);
+            _originalData = Stamp::FromLayer(&scene->Layers[layerIndex], x, y, toStamp->Width, toStamp->Height);
             _replace = replace;
 
             IsDataChange = true;
@@ -361,10 +99,10 @@ struct SceneEditor : Studio::ResourceEditor {
         }
 
         void Do() {
-            Stamp::ToLayer(_toStamp, _scene, _layer, _tileX, _tileY, _replace);
+            Stamp::ToLayer(_toStamp, &_scene->Layers[_layer], _tileX, _tileY, _replace);
         }
         void Undo() {
-            Stamp::ToLayer(_originalData, _scene, _layer, _tileX, _tileY, true);
+            Stamp::ToLayer(_originalData, &_scene->Layers[_layer], _tileX, _tileY, true);
         }
         void Read(Stream* stream) {
             // NOTE: values are slightly out of order to promote
@@ -577,376 +315,6 @@ struct SceneEditor : Studio::ResourceEditor {
     - People added can either View, or Edit (different parts of the stage at once possibly)
     */
     #pragma region Subcontrols
-    struct TileSelector : Panel {
-        SceneEditor* Editor = NULL;
-
-        int TileSize = 16;
-        int TileSpace = 17;
-        int Columns = 16;
-
-        int SelectedTileID = 0;
-        int SelectedTileRange_Start = 0;
-        int SelectedTileRange_End = 0;
-
-        String DefaultTextLine1;
-        String DefaultTextLine2;
-
-        Tile StampTileBuffer[256];
-
-        bool ShowTileGraphics = false;
-        bool ShowTileCollision = false;
-        int TileCollisionPlane = 0;
-
-        DEFINE_SIMPLE_EVENT(SelectedTileIDChanged);
-        DEFINE_SIMPLE_EVENT(SelectedTileRangeChanged);
-
-        TileSelector(SceneEditor* editor) : Panel() {
-            Editor = editor;
-
-            Margin = 1;
-            Padding = 7;
-
-            TileSpace = TileSize + Margin.Left;
-
-            DoHScroll = false;
-            DoVScroll = true;
-
-            HideEmptyVScroll = false;
-
-            BackColor = Color(0x282C34, 0xFF);
-
-            Strings::FromCString(&DefaultTextLine1, "Import Tileset Images", 0);
-            Strings::FromCString(&DefaultTextLine2, "To Get Started!", 0);
-        }
-
-        void OnMouseDown(MouseEventArgs* e) {
-            Control::OnMouseDown(e);
-
-            if (e->Button == SDL_BUTTON(SDL_BUTTON_LEFT) && CaptureMouse()) {
-                Position windowPos = GetPositionInWindowCoords();
-
-                int mx = e->X, my = e->Y;
-                mx -= windowPos.X;
-                my -= windowPos.Y;
-                mx -= ContentBounds.x + Padding.Left;
-                my -= ContentBounds.y + Padding.Top;
-                my += VScrollControl->Value;
-                if (mx >= 0 &&
-                    my >= 0 &&
-                    mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
-                    my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-                    int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, Editor->LinkedStage->TileCount);
-                    SelectRange(tileIndex, tileIndex);
-                    Select(tileIndex);
-                }
-            }
-        }
-        void OnMouseMove(MouseEventArgs* e) {
-            Control::OnMouseMove(e);
-
-            if (e->Button == SDL_BUTTON(SDL_BUTTON_LEFT) && MouseCaptured == this) {
-                RequestUpdatedBounds();
-
-                Position windowPos = GetPositionInWindowCoords();
-
-                int mx = e->X, my = e->Y;
-                mx -= windowPos.X;
-                my -= windowPos.Y;
-                mx -= ContentBounds.x + Padding.Left;
-                my -= ContentBounds.y + Padding.Top;
-                my += VScrollControl->Value;
-                if (mx >= 0 &&
-                    my >= 0 &&
-                    mx < ContentBounds.x + ContentBounds.w - (Padding.Left + Padding.Right) &&
-                    my < ContentBounds.y + ContentBounds.h - (Padding.Top + Padding.Bottom)) {
-                    int tileIndex = M_MIN((mx / TileSpace) + (my / TileSpace) * Columns, Editor->LinkedStage->TileCount);
-                    SelectRange(SelectedTileRange_Start, tileIndex);
-                    Select(tileIndex);
-                }
-            }
-        }
-        void OnMouseUp(MouseEventArgs* e) {
-            if (MouseCaptured == this) {
-                UncaptureMouse();
-            }
-        }
-
-        void RequestUpdatedBounds() {
-            if (!Editor || !Editor->LinkedStage)
-                return;
-
-            auto Bounds = GetScreenRect();
-
-            TileSpace = TileSize + Margin.Left;
-
-            Columns = (Size.Get().W - (Padding.Horizontal() + VScrollControl->Size.Get().W)) / TileSpace;
-            Columns = M_MAX(Columns, 1);
-
-            ContentBounds.x = 0;
-            ContentBounds.y = 0;
-            ContentBounds.w = TileSpace * Columns - Margin.Left + Padding.Horizontal();
-            ContentBounds.h = TileSpace * ((Editor->LinkedStage->TileCount + (Columns - 1)) / Columns) - Margin.Left + Padding.Vertical();
-
-            // Bounds.w = ContentBounds.w + VScrollControl->Bounds.w;
-        }
-        void ResizeChildren() {
-            HideEmptyVScroll = !Editor || !Editor->LinkedStage || Editor->LinkedStage->TileCount == 0;
-
-            RequestUpdatedBounds();
-
-            auto size = Size.Get();
-            DisplayBounds.w = size.W;
-            DisplayBounds.h = size.H;
-
-            bool showHScrollBar = DoHScroll && DisplayBounds.w < ContentBounds.w;
-            bool showVScrollBar = DoVScroll;
-            ::Size hScrollBarSize = HScrollControl->Size;
-            ::Size vScrollBarSize = VScrollControl->Size;
-
-            if (showHScrollBar)
-                DisplayBounds.h -= hScrollBarSize.H;
-            if (showVScrollBar)
-                DisplayBounds.w -= vScrollBarSize.W;
-
-            HScrollControl->Location = { 0, DisplayBounds.h };
-            HScrollControl->Size = { DisplayBounds.w, hScrollBarSize.H };
-
-            VScrollControl->Location = { DisplayBounds.w, 0 };
-            VScrollControl->Size = { vScrollBarSize.W, DisplayBounds.h };
-
-            VScrollControl->Minimum = 0;
-            VScrollControl->Maximum = ContentBounds.h - DisplayBounds.h;
-
-            VScrollControl->SmallChange = TileSpace;
-            VScrollControl->LargeChange = TileSpace * 4;
-
-            Control::ResizeChildren();
-        }
-
-        void GetHighlightBounds(int* start, int* end) {
-            *start = M_MIN(SelectedTileRange_Start, SelectedTileRange_End);
-            *end = M_MAX(SelectedTileRange_Start, SelectedTileRange_End);
-        }
-        bool IsCellWithinHighlight(int x, int y) {
-            int tCount = Editor->LinkedStage->TileCount;
-            int xCount = Columns;
-            int yCount = (tCount + xCount - 1) / xCount;
-
-            if (x < 0 || x >= xCount)
-                return false;
-            if (y < 0 || y >= yCount)
-                return false;
-
-            int index = x + y * xCount;
-            if (index < M_MIN(SelectedTileRange_Start, SelectedTileRange_End)|| index > M_MAX(SelectedTileRange_Start, SelectedTileRange_End))
-                return false;
-
-            return true;
-        }
-        void DrawHighlightSection(SDL_Rect* dst, int bitFlag, Color colorInner, Color colorOuter) {
-            enum CheckDirs {
-                CHK_TOP_LEFT = 1,
-                CHK_TOP = 2,
-                CHK_TOP_RIGHT = 4,
-                CHK_LEFT = 8,
-                CHK_RIGHT = 16,
-                CHK_BOTTOM_LEFT = 32,
-                CHK_BOTTOM = 64,
-                CHK_BOTTOM_RIGHT = 128,
-            };
-
-            int x1i = dst->x,
-                y1i = dst->y,
-                x2i = dst->x + dst->w - 1,
-                y2i = dst->y + dst->h - 1,
-                xwi = dst->w - 2,
-                yhi = dst->h - 2;
-            int x1o = dst->x - 1,
-                y1o = dst->y - 1,
-                x2o = dst->x + dst->w,
-                y2o = dst->y + dst->h,
-                xwo = dst->w,
-                yho = dst->h;
-
-            // colorOuter = colorInner;
-
-            #define INNER_TOP UI::Graphics::Renderer::DrawRect(x1i + 1, y1i, xwi, 1, colorInner)
-            #define INNER_LEFT UI::Graphics::Renderer::DrawRect(x1i, y1i + 1, 1, yhi, colorInner)
-            #define INNER_RIGHT UI::Graphics::Renderer::DrawRect(x2i, y1i + 1, 1, yhi, colorInner)
-            #define INNER_BOTTOM UI::Graphics::Renderer::DrawRect(x1i + 1, y2i, xwi, 1, colorInner)
-            #define INNER_TOP_LEFT UI::Graphics::Renderer::DrawRect(x1i, y1i, 1, 1, colorInner)
-            #define INNER_TOP_RIGHT UI::Graphics::Renderer::DrawRect(x2i, y1i, 1, 1, colorInner)
-            #define INNER_BOTTOM_LEFT UI::Graphics::Renderer::DrawRect(x1i, y2i, 1, 1, colorInner)
-            #define INNER_BOTTOM_RIGHT UI::Graphics::Renderer::DrawRect(x2i, y2i, 1, 1, colorInner)
-
-            #define OUTER_TOP UI::Graphics::Renderer::DrawRect(x1o + 1, y1o, xwo, 1, colorOuter)
-            #define OUTER_LEFT UI::Graphics::Renderer::DrawRect(x1o, y1o + 1, 1, yho, colorOuter)
-            #define OUTER_RIGHT UI::Graphics::Renderer::DrawRect(x2o, y1o + 1, 1, yho, colorOuter)
-            #define OUTER_BOTTOM UI::Graphics::Renderer::DrawRect(x1o + 1, y2o, xwo, 1, colorOuter)
-            #define OUTER_TOP_LEFT UI::Graphics::Renderer::DrawRect(x1o, y1o, 1, 1, colorOuter)
-            #define OUTER_TOP_RIGHT UI::Graphics::Renderer::DrawRect(x2o, y1o, 1, 1, colorOuter)
-            #define OUTER_BOTTOM_LEFT UI::Graphics::Renderer::DrawRect(x1o, y2o, 1, 1, colorOuter)
-            #define OUTER_BOTTOM_RIGHT UI::Graphics::Renderer::DrawRect(x2o, y2o, 1, 1, colorOuter)
-
-            if (!(bitFlag & CHK_TOP)) {
-                INNER_TOP; OUTER_TOP;
-            }
-            if (!(bitFlag & CHK_LEFT)) {
-                INNER_LEFT; OUTER_LEFT;
-            }
-            if (!(bitFlag & CHK_RIGHT)) {
-                INNER_RIGHT; OUTER_RIGHT;
-            }
-            if (!(bitFlag & CHK_BOTTOM)) {
-                INNER_BOTTOM; OUTER_BOTTOM;
-            }
-
-            // Outside TL Corner (0|0), Inner TL Corner (1|1), L H Connector (0|1), T V Connector (1|0)
-            if (!(bitFlag & CHK_TOP_LEFT)) {
-                INNER_TOP_LEFT; OUTER_TOP_LEFT;
-            }
-            if (!(bitFlag & CHK_TOP_RIGHT)) {
-                INNER_TOP_RIGHT; OUTER_TOP_RIGHT;
-            }
-            if (!(bitFlag & CHK_BOTTOM_LEFT)) {
-                INNER_BOTTOM_LEFT; OUTER_BOTTOM_LEFT;
-            }
-            if (!(bitFlag & CHK_BOTTOM_RIGHT)) {
-                INNER_BOTTOM_RIGHT; OUTER_BOTTOM_RIGHT;
-            }
-
-        }
-
-        inline int TileIndexToColumn(int t) {
-            return t % Columns;
-        }
-        inline int TileIndexToRow(int t) {
-            return t / Columns;
-        }
-
-        void Select(int id) {
-            if (SelectedTileID != id) {
-                SelectedTileID = id;
-                OnSelectedTileIDChanged(NULL);
-            }
-        }
-        void SelectRange(int start, int end) {
-            if (SelectedTileRange_Start != start ||
-                SelectedTileRange_End != end) {
-                SelectedTileRange_Start = start;
-                SelectedTileRange_End = end;
-                OnSelectedTileRangeChanged(NULL);
-            }
-        }
-
-        void Render() {
-            Panel::Render();
-
-            if (!Editor || !Editor->LinkedStage)
-                return;
-
-            auto Bounds = GetScreenRect();
-
-            if (Editor->LinkedStage->TileCount == 0) {
-                ::Size lineSz1, lineSz2;
-                UI::Graphics::Font::Face* Typeface = UI::Graphics::Font::Arial[12];
-                UI::Graphics::Renderer::MeasureFont(&DefaultTextLine1, Typeface, &lineSz1.W, &lineSz1.H);
-                UI::Graphics::Renderer::MeasureFont(&DefaultTextLine2, Typeface, &lineSz2.W, &lineSz2.H);
-
-                UI::Graphics::Renderer::DrawFont(&DefaultTextLine1, Typeface, Bounds.x + Bounds.w / 2, Bounds.y + Bounds.h / 2 - (lineSz1.H + lineSz2.H) / 2, TEXT_ALIGN_CENTER | TEXT_VALIGN_MIDDLE, Color(0xFFFFFF, 0xFF));
-                UI::Graphics::Renderer::DrawFont(&DefaultTextLine2, Typeface, Bounds.x + Bounds.w / 2, Bounds.y + Bounds.h / 2 + (lineSz1.H + lineSz2.H) / 2, TEXT_ALIGN_CENTER | TEXT_VALIGN_MIDDLE, Color(0xFFFFFF, 0xFF));
-            }
-            else {
-                SDL_Rect buffer;
-                ClipStart(&buffer, &Bounds);
-
-                const int columnMask = 63;
-                const int columnCount = 64;
-                const int columnBitshift = 6;
-
-                int rows = TileIndexToRow(Editor->LinkedStage->TileCount + Columns - 1);
-                if (rows < 1)
-                    rows = 1;
-
-                UI::Graphics::Renderer::DrawRect(
-                    Bounds.x + Padding.Left - 1,
-                    Bounds.y + Padding.Top - 1 - VScrollControl->Value,
-                    1 + Columns * TileSpace,
-                    1 + rows * TileSpace, Color(0x000000, 0xFF));
-
-                SDL_SetTextureColorMod(Editor->LinkedStage->TileCollisionTextures[4 * TileCollisionPlane], 0xFF, 0xFF, 0xFF);
-
-                int tileSpc = TileSpace;
-                for (int t = 0; t < Editor->LinkedStage->TileCount; t++) {
-                    int tX = Padding.Left + TileIndexToColumn(t) * tileSpc;
-                    int tY = Padding.Top + TileIndexToRow(t) * tileSpc - VScrollControl->Value;
-                    SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
-                    SDL_Rect dst = { Bounds.x + tX, Bounds.y + tY, TileSize, TileSize };
-
-                    UI::Graphics::Renderer::DstRectAdjustment(&dst);
-                    if (ShowTileGraphics) {
-                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
-                    }
-                    if (ShowTileCollision) {
-                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->TileCollisionTextures[4 * TileCollisionPlane], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
-                    }
-                }
-
-                if (SelectedTileRange_Start != -1) {
-                    Color colorInner = Color(0x7F7F7F, 0xFF);
-                    Color colorOuter = Color(0xFFFFFF, 0xFF);
-                    int indexStart, indexEnd;
-                    int s = TileSpace * 2;
-
-                    GetHighlightBounds(&indexStart, &indexEnd);
-
-                    enum CheckDirs {
-                        CHK_TOP_LEFT = 1,
-                        CHK_TOP = 2,
-                        CHK_TOP_RIGHT = 4,
-                        CHK_LEFT = 8,
-                        CHK_RIGHT = 16,
-                        CHK_BOTTOM_LEFT = 32,
-                        CHK_BOTTOM = 64,
-                        CHK_BOTTOM_RIGHT = 128,
-                    };
-
-                    int bitFlag, cx, cy, tX, tY;
-                    for (int t = indexStart; t <= indexEnd; t++) {
-                        bitFlag = 0;
-                        cx = TileIndexToColumn(t);
-                        cy = TileIndexToRow(t);
-                        tX = Padding.Left + cx * tileSpc;
-                        tY = Padding.Top + cy * tileSpc - VScrollControl->Value;
-
-                        // Cardinal directions
-                        if (IsCellWithinHighlight(cx, cy - 1))
-                            bitFlag |= CHK_TOP;
-                        if (IsCellWithinHighlight(cx - 1, cy))
-                            bitFlag |= CHK_LEFT;
-                        if (IsCellWithinHighlight(cx + 1, cy))
-                            bitFlag |= CHK_RIGHT;
-                        if (IsCellWithinHighlight(cx, cy + 1))
-                            bitFlag |= CHK_BOTTOM;
-
-                        if ((bitFlag & (CHK_TOP | CHK_LEFT)) == (CHK_TOP | CHK_LEFT) && IsCellWithinHighlight(cx - 1, cy - 1))
-                            bitFlag |= CHK_TOP_LEFT;
-                        if ((bitFlag & (CHK_TOP | CHK_RIGHT)) == (CHK_TOP | CHK_RIGHT) && IsCellWithinHighlight(cx + 1, cy - 1))
-                            bitFlag |= CHK_TOP_RIGHT;
-                        if ((bitFlag & (CHK_BOTTOM | CHK_LEFT)) == (CHK_BOTTOM | CHK_LEFT) && IsCellWithinHighlight(cx - 1, cy + 1))
-                            bitFlag |= CHK_BOTTOM_LEFT;
-                        if ((bitFlag & (CHK_BOTTOM | CHK_RIGHT)) == (CHK_BOTTOM | CHK_RIGHT) && IsCellWithinHighlight(cx + 1, cy + 1))
-                            bitFlag |= CHK_BOTTOM_RIGHT;
-
-                        SDL_Rect dst = { Bounds.x + tX, Bounds.y + tY, TileSize, TileSize };
-                        DrawHighlightSection(&dst, bitFlag, colorInner, colorOuter);
-                    }
-                }
-
-                ClipEnd(&buffer);
-            }
-        }
-    };
     struct PropertyGrid : Panel {
         SceneEditor* Editor = NULL;
 
@@ -1402,7 +770,15 @@ struct SceneEditor : Studio::ResourceEditor {
                             Bounds.y + tY + (Bounds.h - CurrentStamp->Height * TILE_SIZE) / 2, TILE_SIZE, TILE_SIZE };
 
                         UI::Graphics::Renderer::DstRectAdjustment(&dst);
-                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->TileImageTextures[tile->FlipY << 1 | tile->FlipX], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
+
+                        int flipFlags = SDL_FLIP_NONE;
+                        if (tile->FlipX) {
+                            flipFlags |= SDL_FLIP_HORIZONTAL;
+                        }
+                        if (tile->FlipY) {
+                            flipFlags |= SDL_FLIP_VERTICAL;
+                        }
+                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, Editor->LinkedStage->Tileset.TileImageTexture, &src, &dst, 0.0, NULL, (SDL_RendererFlip)flipFlags);
                     }
 
                     ClipEnd(&buffer);
@@ -1649,8 +1025,8 @@ struct SceneEditor : Studio::ResourceEditor {
                 if (result == DialogResult::OK) {
                     char stringBuffer[256];
                     Strings::ToCString(stringBuffer, &dialog->textBoxName->Text);
-                    Editor->StampCollectionAdd(stringBuffer, Stamp::FromLayer(Editor,
-                        Editor->tilePlacementField->CurrentLayer, tileSelBounds.x, tileSelBounds.y, tileSelBounds.w, tileSelBounds.h));
+                    Editor->StampCollectionAdd(stringBuffer, Stamp::FromLayer(&Editor->Layers[Editor->tilePlacementField->CurrentLayer],
+                        tileSelBounds.x, tileSelBounds.y, tileSelBounds.w, tileSelBounds.h));
                 }
             });
         }
@@ -1730,710 +1106,6 @@ struct SceneEditor : Studio::ResourceEditor {
 
         void Render() {
             Panel::Render();
-        }
-    };
-    struct TileCollisionEditor : Panel {
-        struct TileDrawingWidget : Control {
-            enum class EditMode {
-                Collision,
-                Angle,
-            };
-
-            TileCollisionEditor* tileCollisionEditor = NULL;
-            EditMode editMode = EditMode::Collision;
-
-            MouseEventArgs dragStart = { };
-            Vector2 dragPxStart;
-            Vector2 dragPxEnd;
-
-            TileDrawingWidget(TileCollisionEditor* tileCollisionEditor) : Control() {
-                this->tileCollisionEditor = tileCollisionEditor;
-            }
-
-            int GetPlane() {
-                if (tileCollisionEditor->radioButtonShowA->Checked)
-                    return 0;
-                if (tileCollisionEditor->radioButtonShowB->Checked)
-                    return 1;
-
-                return 0;
-            }
-
-            void MouseSelect(MouseEventArgs* e) {
-                auto bounds = GetScreenRect();
-                TileSelector* tileSelector = tileCollisionEditor->tileSelector;
-                SceneEditor* editor = tileCollisionEditor->Editor;
-                int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-                int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-
-                int p = GetPlane();
-
-                int column = (e->X - bounds.x) * 16 / bounds.w;
-                int row = (e->Y - bounds.y) * 16 / bounds.h;
-                if (column < 0 || column >= 16)
-                    return;
-                if (row < 0 || row >= 16)
-                    return;
-
-                dragPxEnd = { (e->X - bounds.x), (e->Y - bounds.y) };
-
-                if (editor->LinkedStage) {
-                    if (tileSelector->SelectedTileID >= 0) {
-                        if (editMode == EditMode::Collision) {
-                            if (e->Button == SDL_BUTTON(SDL_BUTTON_LEFT)) {
-                                for (int t = tS; t <= tE; t++) {
-                                    Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
-                                    tileData->Collision[column] = row;
-                                }
-                            }
-                            else if (e->Button == SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-                                for (int t = tS; t <= tE; t++) {
-                                    Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
-                                    tileData->Collision[column] = 0xFF;
-                                }
-                            }
-                        }
-                        else if (editMode == EditMode::Angle) {
-                            int columnS = (dragStart.X - bounds.x) * 16 / bounds.w;
-                            int rowS = (dragStart.Y - bounds.y) * 16 / bounds.h;
-                            if (columnS < 0 || columnS >= 16)
-                                return;
-                            if (rowS < 0 || rowS >= 16)
-                                return;
-
-                            for (int t = tS; t <= tE; t++) {
-                                Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
-                                int newAngle = Math::ATan(dragPxEnd.X - dragPxStart.X, dragPxEnd.Y - dragPxStart.Y);
-
-                                switch (editor->tileCollisionEditor->GetAngleEditSide()) {
-                                case 0: tileData->AngleTop = newAngle; break;
-                                case 1: tileData->AngleLeft = newAngle; break;
-                                case 2: tileData->AngleRight = newAngle; break;
-                                case 3: tileData->AngleBottom = newAngle; break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            void OnMouseDown(MouseEventArgs* e) {
-                const Uint8* state = SDL_GetKeyboardState(NULL);
-                if (state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT])
-                    editMode = EditMode::Angle;
-                else
-                    editMode = EditMode::Collision;
-
-                if (CaptureMouse()) {
-                    dragStart = *e;
-
-                    MouseSelect(e);
-
-                    auto bounds = GetScreenRect();
-                    dragPxStart = { (e->X - bounds.x), (e->Y - bounds.y) };
-                }
-            }
-            void OnMouseMove(MouseEventArgs* e) {
-                if (MouseCaptured == this) {
-                    MouseSelect(e);
-                }
-            }
-            void OnMouseUp(MouseEventArgs* e) {
-                if (MouseCaptured == this) {
-                    TileSelector* tileSelector = tileCollisionEditor->tileSelector;
-                    SceneEditor* editor = tileCollisionEditor->Editor;
-                    int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-                    int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-
-                    int p = GetPlane();
-
-                    if (editMode == EditMode::Collision) {
-                        for (int t = tS; t <= tE; t++)
-                            editor->LinkedStage->UpdateTileCollisionTexture(p, t);
-
-                        editor->tilePlacementField->UpdateRenderTarget = true;
-                    }
-
-                    UncaptureMouse();
-
-                    editMode = EditMode::Collision;
-                }
-            }
-
-            void DrawCheckedRect(int x, int y, int w, int h, int oddMod) {
-                const Color white = Color(0xFFFFFF, 0x80);
-                const Color black = Color(0x000000, 0x80);
-
-                // for (int xx = x; xx < x + w; xx++) {
-                //     for (int yy = y; yy < y + h; yy++) {
-                //         UI::Graphics::Renderer::DrawRect(xx, yy, 1, 1, ((xx + yy) & 1) ? black : white);
-                //     }
-                // }
-                UI::Graphics::Renderer::DrawRect(x, y, w, h, white);
-            }
-
-            void Render() {
-                auto bounds = GetScreenRect();
-
-                const Color gridColor = Color(0x808080, 0x80);
-
-                const Color greay = Color(0x808080, 0xFF);
-                const Color white = Color(0xFFFFFF, 0xFF);
-                TileSelector* tileSelector = tileCollisionEditor->tileSelector;
-                SceneEditor* editor = tileCollisionEditor->Editor;
-                bool showGrid = tileCollisionEditor->checkBoxShowGrid->GetChecked();
-
-                int p = GetPlane();
-
-                UI::Graphics::Renderer::DrawRect(&bounds, Color(0x000000, 0xFF));
-
-                if (editor->LinkedStage) {
-                    if (tileSelector->SelectedTileID >= 0) {
-                        const int TileSize = 16;
-                        const int columnMask = 63;
-                        const int columnCount = 64;
-                        const int columnBitshift = 6;
-                        int t = tileSelector->SelectedTileID;
-
-                        int pxSz = bounds.w / TileSize;
-
-                        SDL_Rect src = { (t & columnMask) << 4, (t >> columnBitshift) << 4, TileSize, TileSize };
-                        SDL_Rect dst = bounds;
-                        UI::Graphics::Renderer::DstRectAdjustment(&dst);
-                        SDL_RenderCopyEx(UI::Graphics::Renderer::Renderer, editor->LinkedStage->TileImageTextures[0], &src, &dst, 0.0, NULL, SDL_FLIP_NONE);
-
-                        Stage::EditableTileConfig* tileData = &editor->LinkedStage->TileCfg[p][t];
-
-                        if (editMode == EditMode::Collision) {
-                            if (tileData->Orientation) {
-                                // Top anchored
-                                for (int column = 0; column < TILE_SIZE; column++) {
-                                    auto col = tileData->Collision[column];
-                                    auto colh = col * pxSz + pxSz;
-                                    if (col != 0xFF)
-                                        DrawCheckedRect(bounds.x + column * pxSz, bounds.y, pxSz, colh, 0);
-                                }
-                            }
-                            else {
-                                // Bottom anchored
-                                for (int column = 0; column < TILE_SIZE; column++) {
-                                    auto col = tileData->Collision[column];
-                                    auto colh = col * pxSz;
-                                    if (col != 0xFF)
-                                        DrawCheckedRect(bounds.x + column * pxSz, bounds.y + colh, pxSz, bounds.h - colh, 0);
-                                }
-                            }
-
-                            if (showGrid) {
-                                for (int column = 0; column < TILE_SIZE; column++) {
-                                    UI::Graphics::Renderer::StrokeRect(bounds.x, bounds.y + column * pxSz - 1, bounds.w, 1, gridColor);
-                                    UI::Graphics::Renderer::StrokeRect(bounds.x + column * pxSz - 1, bounds.y, 1, bounds.h, gridColor);
-                                }
-                            }
-                        }
-                        else {
-                            UI::Graphics::Renderer::DrawLine(
-                                bounds.x + dragPxStart.X, bounds.y + dragPxStart.Y,
-                                bounds.x + dragPxEnd.X, bounds.y + dragPxEnd.Y, Color(0xFF0000, 0xFF));
-                        }
-                    }
-                }
-
-                UI::Graphics::Renderer::StrokeRect(bounds.x - 1, bounds.y - 1, bounds.w + 2, bounds.h + 2, greay);
-            }
-        };
-
-        SceneEditor* Editor = NULL;
-
-        TileSelector* tileSelector = NULL;
-        SplitContainer* splitter = NULL;
-        TileDrawingWidget* tilePreviewWindow = NULL;
-        CheckBox* checkBoxShowTile = NULL;
-        CheckBox* checkBoxShowCollision = NULL;
-        Label* labelShowPlane = NULL;
-        RadioButton* radioButtonShowA = NULL;
-        RadioButton* radioButtonShowB = NULL;
-        Label* labelEditAngle = NULL;
-        RadioButton* radioButtonAngleTop = NULL;
-        RadioButton* radioButtonAngleBottom = NULL;
-        RadioButton* radioButtonAngleLeft = NULL;
-        RadioButton* radioButtonAngleRight = NULL;
-		RadialKnob* radialKnobAngle = NULL;
-        Label* labelRawAngleValue = NULL;
-        Label* labelAutoCollision = NULL;
-        Button* buttonSetCollisionForSelectedRange = NULL;
-        Label* labelAutoCollisionNote = NULL;
-        Label* labelManualSettings = NULL;
-        Label* labelOrientation = NULL;
-        ComboBox* comboboxOrientation = NULL;
-        Label* labelBehaviorFlag = NULL;
-        NumericUpDown* numericUpDownBoxBehaviorFlag = NULL;
-        CheckBox* checkBoxShowGrid = NULL;
-
-        // These are not allocated, do not 'delete'!
-        RadioButton* SelectionGroup1 = NULL;
-        RadioButton* SelectionGroup2 = NULL;
-
-        TileCollisionEditor(SceneEditor* editor) : Panel() {
-            Editor = editor;
-
-            DoHScroll = false;
-            DoVScroll = true;
-
-            BackColor = Color(0x282C34, 0xFF);
-
-            splitter = new SplitContainer();
-            splitter->Dock = DOCK_FILL;
-            splitter->BackColor = Color(0x000000, 0xFF);
-            splitter->Panel1->BackColor = Color(0x000000, 0x00);
-            splitter->Panel2->BackColor = BackColor;
-            splitter->Orientation = SplitOrientation::Vertical;
-            splitter->IsSplitterFixed = true;
-            splitter->FixedPanel = SplitPanelFix::Panel2;
-            splitter->SplitterWidth = 1;
-            splitter->SplitterDistance = 2000;
-            Controls.Add(splitter);
-
-            tileSelector = new TileSelector(editor);
-            tileSelector->ShowTileCollision = true;
-            tileSelector->onSelectedTileIDChanged += std::bind(&TileCollisionEditor::tileSelector_onSelectedTileIDChanged, this, std::placeholders::_1, std::placeholders::_2);
-            splitter->Panel1->Controls.Add(tileSelector);
-
-            checkBoxShowTile = new CheckBox("Show Tile:");
-            checkBoxShowTile->CheckState = CheckState::Unchecked;
-            checkBoxShowTile->Location = { 8, 8 };
-            checkBoxShowTile->onCheckedChanged += std::bind(&TileCollisionEditor::checkBoxShowTile_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            checkBoxShowTile->CheckAlign = TEXT_ALIGN_RIGHT | TEXT_VALIGN_MIDDLE;
-            checkBoxShowTile->Padding = 0;
-            checkBoxShowTile->Padding.Left = 8;
-            splitter->Panel2->Controls.Add(checkBoxShowTile);
-
-            checkBoxShowCollision = new CheckBox("Show Collision:");
-            checkBoxShowCollision->CheckState = CheckState::Checked;
-            checkBoxShowCollision->Location = { checkBoxShowTile->Location.X + 100, checkBoxShowTile->Location.Y };
-            checkBoxShowCollision->onCheckedChanged += std::bind(&TileCollisionEditor::checkBoxShowTile_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            checkBoxShowCollision->CheckAlign = TEXT_ALIGN_RIGHT | TEXT_VALIGN_MIDDLE;
-            checkBoxShowCollision->Padding = 0;
-            checkBoxShowCollision->Padding.Left = 8;
-            splitter->Panel2->Controls.Add(checkBoxShowCollision);
-
-            labelShowPlane = new Label("Show Plane:");
-            labelShowPlane->Location = { 8, 8 + 28 };
-            splitter->Panel2->Controls.Add(labelShowPlane);
-
-            radioButtonShowA = new RadioButton("A");
-            radioButtonShowA->Checked = false;
-            radioButtonShowA->Location = { 8 + 80, 8 + 28 };
-            radioButtonShowA->onCheckedChanged += std::bind(&TileCollisionEditor::radioButtonShow_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            radioButtonShowA->SelectionGroup = &SelectionGroup1;
-            splitter->Panel2->Controls.Add(radioButtonShowA);
-
-            radioButtonShowB = new RadioButton("B");
-            radioButtonShowB->Checked = false;
-            radioButtonShowB->Location = { 8 + 80 + 50, 8 + 28 };
-            radioButtonShowB->onCheckedChanged += std::bind(&TileCollisionEditor::radioButtonShow_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            radioButtonShowB->SelectionGroup = &SelectionGroup1;
-            splitter->Panel2->Controls.Add(radioButtonShowB);
-
-            labelEditAngle = new Label("Edit Angle:");
-            labelEditAngle->Location = { 8, 8 + 28 + 28 + 14 };
-            splitter->Panel2->Controls.Add(labelEditAngle);
-
-            radioButtonAngleTop = new RadioButton("Main"); // "Top"
-            radioButtonAngleTop->Checked = false;
-            radioButtonAngleTop->Location = { 8 + 65, 8 + 28 + 28 };
-            radioButtonAngleTop->onCheckedChanged += std::bind(&TileCollisionEditor::radioButtonShow_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            radioButtonAngleTop->SelectionGroup = &SelectionGroup2;
-            splitter->Panel2->Controls.Add(radioButtonAngleTop);
-
-            radioButtonAngleBottom = new RadioButton("Unused"); // "Bottom"
-            radioButtonAngleBottom->Checked = false;
-            radioButtonAngleBottom->Location = { 8 + 65 + 80, 8 + 28 + 28 };
-            radioButtonAngleBottom->onCheckedChanged += std::bind(&TileCollisionEditor::radioButtonShow_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            radioButtonAngleBottom->SelectionGroup = &SelectionGroup2;
-            splitter->Panel2->Controls.Add(radioButtonAngleBottom);
-
-            radioButtonAngleLeft = new RadioButton("Unused"); // "Left"
-            radioButtonAngleLeft->Checked = false;
-            radioButtonAngleLeft->Location = { 8 + 65, 8 + 28 + 28 + 28 };
-            radioButtonAngleLeft->onCheckedChanged += std::bind(&TileCollisionEditor::radioButtonShow_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            radioButtonAngleLeft->SelectionGroup = &SelectionGroup2;
-            splitter->Panel2->Controls.Add(radioButtonAngleLeft);
-
-            radioButtonAngleRight = new RadioButton("Unused"); // "Right"
-            radioButtonAngleRight->Checked = false;
-            radioButtonAngleRight->Location = { 8 + 65 + 80, 8 + 28 + 28 + 28 };
-            radioButtonAngleRight->onCheckedChanged += std::bind(&TileCollisionEditor::radioButtonShow_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            radioButtonAngleRight->SelectionGroup = &SelectionGroup2;
-            splitter->Panel2->Controls.Add(radioButtonAngleRight);
-
-            radioButtonAngleBottom->Enabled = false;
-            radioButtonAngleLeft->Enabled = false;
-            radioButtonAngleRight->Enabled = false;
-
-            radialKnobAngle = new RadialKnob();
-            radialKnobAngle->Location = { radioButtonAngleBottom->Location.X + 80, radioButtonAngleBottom->Location.Y };
-			radialKnobAngle->Size = { 48, 48 };
-			radialKnobAngle->MaxAngle = 256.0;
-            radialKnobAngle->Bias = 64.0;
-			radialKnobAngle->onDialTurn += std::bind(&TileCollisionEditor::radialKnobAngle_onDialTurn, this, std::placeholders::_1, std::placeholders::_2);
-            radialKnobAngle->onValueChanged += std::bind(&TileCollisionEditor::radialKnobAngle_onValueChanged, this, std::placeholders::_1, std::placeholders::_2);
-            splitter->Panel2->Controls.Add(radialKnobAngle);
-
-            labelRawAngleValue = new Label("Angle:  0 degrees (0x00)");
-			labelRawAngleValue->ForeColor = Color(0xFFFFFF, 0x7F);
-            labelRawAngleValue->Location = { 8 + 65, 8 + 28 + 28 + 28 + 28 };
-            splitter->Panel2->Controls.Add(labelRawAngleValue);
-
-            labelAutoCollision = new Label("AutoCollision (Loose Fit)");
-            labelAutoCollision->Location = { 8, labelRawAngleValue->Location.Y + 28 };
-            splitter->Panel2->Controls.Add(labelAutoCollision);
-
-            buttonSetCollisionForSelectedRange = new Button("Set Collision For Selected Range");
-            // buttonSetCollisionForSelectedRange->Anchor = ANCHOR_LEFT;
-            buttonSetCollisionForSelectedRange->Location = { 8, labelAutoCollision->Location.Y + 25 };
-            buttonSetCollisionForSelectedRange->Margin.Top = 4;
-            buttonSetCollisionForSelectedRange->Size = { 200, 25 };
-            buttonSetCollisionForSelectedRange->onMouseClick += std::bind(&TileCollisionEditor::buttonSetCollisionForSelectedRange_onMouseClick, this, std::placeholders::_1, std::placeholders::_2);
-            splitter->Panel2->Controls.Add(buttonSetCollisionForSelectedRange);
-
-            labelAutoCollisionNote = new Label("*sets the values based on the tile image.");
-            labelAutoCollisionNote->ForeColor = Color(0xFFFFFF, 0x7F);
-            labelAutoCollisionNote->Location = { 8, buttonSetCollisionForSelectedRange->Location.Y + 29 };
-            splitter->Panel2->Controls.Add(labelAutoCollisionNote);
-
-            labelManualSettings = new Label("Manual Settings");
-            labelManualSettings->Location = { 8, labelAutoCollisionNote->Location.Y + 28 };
-            splitter->Panel2->Controls.Add(labelManualSettings);
-
-            //*
-            tilePreviewWindow = new TileDrawingWidget(this);
-            tilePreviewWindow->Dock = DOCK_NONE;
-            tilePreviewWindow->Location = { 8, labelManualSettings->Location.Y + 28 };
-            tilePreviewWindow->Size = { 176, 176 };
-            splitter->Panel2->Controls.Add(tilePreviewWindow);
-            //*/
-
-            labelOrientation = new Label("Orientation:");
-            labelOrientation->Location = { tilePreviewWindow->Location.X + tilePreviewWindow->Size.Get().W + 8, tilePreviewWindow->Location.Y };
-            splitter->Panel2->Controls.Add(labelOrientation);
-
-            comboboxOrientation = new ComboBox();
-            comboboxOrientation->Location = { labelOrientation->Location.X, labelOrientation->Location.Y + 20 };
-            comboboxOrientation->Size = { 100, 25 };
-            comboboxOrientation->Items.Add("FLOOR");
-            comboboxOrientation->Items.Add("CEILING");
-            comboboxOrientation->Select(0);
-            comboboxOrientation->onSelectedIndexChanged += std::bind(&TileCollisionEditor::comboboxOrientation_onSelectedIndexChanged, this, std::placeholders::_1, std::placeholders::_2);
-            splitter->Panel2->Controls.Add(comboboxOrientation);
-
-            labelBehaviorFlag = new Label("Behavior Flag:");
-            labelBehaviorFlag->Location = { comboboxOrientation->Location.X, comboboxOrientation->Location.Y + 28 };
-            splitter->Panel2->Controls.Add(labelBehaviorFlag);
-
-            numericUpDownBoxBehaviorFlag = new NumericUpDown();
-            numericUpDownBoxBehaviorFlag->Hexadecimal = true;
-            numericUpDownBoxBehaviorFlag->Minimum = 0.0f;
-            numericUpDownBoxBehaviorFlag->Maximum = 255.0f;
-            numericUpDownBoxBehaviorFlag->Location = { labelBehaviorFlag->Location.X, labelBehaviorFlag->Location.Y + 20 };
-            numericUpDownBoxBehaviorFlag->Size = { 100, 25 };
-            numericUpDownBoxBehaviorFlag->onValueChanged += std::bind(&TileCollisionEditor::numericUpDownBoxBehaviorFlag_onValueChanged, this, std::placeholders::_1, std::placeholders::_2);
-            splitter->Panel2->Controls.Add(numericUpDownBoxBehaviorFlag);
-
-            checkBoxShowGrid = new CheckBox("Show Grid:");
-            checkBoxShowGrid->CheckState = CheckState::Unchecked;
-            checkBoxShowGrid->Location = { numericUpDownBoxBehaviorFlag->Location.X, numericUpDownBoxBehaviorFlag->Location.Y + 28 };
-            // checkBoxShowGrid->onCheckedChanged += std::bind(&TileCollisionEditor::checkBoxShowTile_onCheckedChanged, this, std::placeholders::_1, std::placeholders::_2);
-            checkBoxShowGrid->CheckAlign = TEXT_ALIGN_RIGHT | TEXT_VALIGN_MIDDLE;
-            checkBoxShowGrid->Padding = 0;
-            checkBoxShowGrid->Padding.Left = 8;
-            splitter->Panel2->Controls.Add(checkBoxShowGrid);
-
-            ///
-            splitter->Panel2MinSize = tilePreviewWindow->Location.Y + tilePreviewWindow->Size.Get().H + 8;
-
-            ///
-            radioButtonShowA->Check();
-            radioButtonAngleTop->Check();
-        }
-        ~TileCollisionEditor() {
-            delete tileSelector;
-            delete splitter;
-            delete tilePreviewWindow;
-            delete checkBoxShowTile;
-            delete checkBoxShowCollision;
-            delete labelShowPlane;
-            delete radioButtonShowA;
-            delete radioButtonShowB;
-            delete labelEditAngle;
-            delete radioButtonAngleTop;
-            delete radioButtonAngleBottom;
-            delete radioButtonAngleLeft;
-            delete radioButtonAngleRight;
-    		delete radialKnobAngle;
-            delete labelRawAngleValue;
-            delete labelAutoCollision;
-            delete buttonSetCollisionForSelectedRange;
-            delete labelAutoCollisionNote;
-            delete labelManualSettings;
-            delete labelOrientation;
-            delete comboboxOrientation;
-            delete labelBehaviorFlag;
-            delete numericUpDownBoxBehaviorFlag;
-            delete checkBoxShowGrid;
-        }
-
-        void UpdateAngleLabel(int newAngle) {
-            char textBuffer[256];
-            int newAngleDeg = (int)(newAngle * 360.0 / radialKnobAngle->MaxAngle);
-            snprintf(textBuffer, 255, "Angle:  %d degrees (0x%02X)", newAngleDeg, newAngle);
-            labelRawAngleValue->SetText(textBuffer);
-        }
-		void UpdateTileInfoUI() {
-			if (tileSelector->SelectedTileID < 0)
-				return;
-            if (!Editor->LinkedStage)
-                return;
-
-			int p = tilePreviewWindow->GetPlane();
-			int t = tileSelector->SelectedTileID;
-            Stage::EditableTileConfig* tileData = &Editor->LinkedStage->TileCfg[p][t];
-
-			int newAngle = -1;
-            switch (GetAngleEditSide()) {
-            case 0: newAngle = tileData->AngleTop; break;
-            case 1: newAngle = tileData->AngleLeft; break;
-            case 2: newAngle = tileData->AngleRight; break;
-            case 3: newAngle = tileData->AngleBottom; break;
-            }
-
-            comboboxOrientation->CanRaiseEvents = false;
-            comboboxOrientation->Select(tileData->Orientation);
-            comboboxOrientation->CanRaiseEvents = true;
-
-            radialKnobAngle->CanRaiseEvents = false;
-			radialKnobAngle->Angle = newAngle;
-            radialKnobAngle->CanRaiseEvents = true;
-
-            numericUpDownBoxBehaviorFlag->CanRaiseEvents = false;
-            numericUpDownBoxBehaviorFlag->Value = tileData->Behavior;
-            numericUpDownBoxBehaviorFlag->CanRaiseEvents = true;
-
-            UpdateAngleLabel(newAngle);
-		}
-
-        int GetAngleEditSide() {
-            if (radioButtonAngleTop->Checked)
-                return 0;
-            if (radioButtonAngleLeft->Checked)
-                return 1;
-            if (radioButtonAngleRight->Checked)
-                return 2;
-            if (radioButtonAngleBottom->Checked)
-                return 3;
-            return -1;
-        }
-
-        void DoAutoTile(int i) {
-            if (Editor->LinkedStage == NULL)
-                return;
-            if (Editor->LinkedStage->TileImagePixelData == NULL)
-                return;
-
-            int p = tilePreviewWindow->GetPlane();
-            Stage::EditableTileConfig* tileData = &Editor->LinkedStage->TileCfg[p][i];
-
-            int tileSize = 16;
-            int columnCount = 64;
-            int tileSheetWidth = tileSize * columnCount;
-
-            int tileImageX = (i % columnCount) * tileSize;
-            int tileImageY = (i / columnCount) * tileSize;
-            bool isCeiling = false;
-            bool hasCollision = true;
-            Uint32* pxData = Editor->LinkedStage->TileImagePixelData;
-
-            // Determine whether is ceiling or not.
-            int topCount = 0;
-            int bottomCount = 0;
-            for (int p = tileImageX; p < tileImageX + tileSize; p++) {
-                int px;
-
-                px = (p + (tileImageY) * tileSheetWidth);
-                if ((pxData[px] & 0xFF000000) > 0)
-                    topCount++;
-
-                px = (p + (tileImageY + tileSize - 1) * tileSheetWidth);
-                if ((pxData[px] & 0xFF000000) > 0)
-                    bottomCount++;
-            }
-            if (topCount > bottomCount)
-                isCeiling = true;
-
-            tileData->Orientation = isCeiling;
-            tileData->AngleTop = 0x00;
-
-            int firstValue = -1;
-            int lastValue = -1;
-            int slopeRun = 0;
-
-            // Get space lengths.
-            if (isCeiling) {
-                // If ceiling, start checking from bottom and vice-versa
-                int fx = 0;
-                for (int p = tileImageX; p < tileImageX + tileSize; p++) {
-                    int value = 0xFF;
-                    for (int c = 0, pY = (p + (tileImageY + tileSize - 1) * tileSheetWidth);
-                        c < tileSize;
-                        c++, pY -= tileSheetWidth) {
-                        if ((pxData[pY] & 0xFF000000) > 0) {
-                            value = tileSize - 1 - c;
-                            break;
-                        }
-                    }
-
-                    tileData->Collision[fx] = value;
-
-                    if (value != 0xFF && value != tileSize - 1) {
-                        if (firstValue == -1)
-                            firstValue = value + 1;
-
-                        lastValue = value + 1;
-                        slopeRun++;
-                    }
-                    fx++;
-                }
-            }
-            else {
-                int fx = 0;
-                for (int p = tileImageX; p < tileImageX + tileSize; p++) {
-                    int value = 0xFF;
-                    for (int c = 0, pY = (p + (tileImageY) * tileSheetWidth);
-                        c < tileSize;
-                        c++, pY += tileSheetWidth) {
-                        if ((pxData[pY] & 0xFF000000) > 0) {
-                            value = c;
-                            break;
-                        }
-                    }
-
-                    tileData->Collision[fx] = value;
-
-                    if (value != 0xFF && value != 0) {
-                        if (firstValue == -1)
-                            firstValue = value - 1;
-
-                        lastValue = value - 1;
-                        slopeRun++;
-                    }
-                    fx++;
-                }
-            }
-
-            if (firstValue > -1 && lastValue > -1) {
-                int slopeRise = lastValue - firstValue;
-                if (slopeRise < 0) slopeRise--; else slopeRise++;
-
-                int angle = Math::ATan(slopeRun, slopeRise);
-                // printf("Tile %d: F %d L %d Run %d > 0x%02X -> 0x%02X\n", i, firstValue, lastValue, slopeRun, angle, (angle + 2) & 0xFC);
-                tileData->AngleTop = (angle + 2) & 0xFC;
-            }
-
-            Editor->LinkedStage->UpdateTileCollisionTexture(p, i);
-            Editor->tilePlacementField->UpdateRenderTarget = true;
-        }
-
-        void buttonSetCollisionForSelectedRange_onMouseClick(void* sender, MouseEventArgs* e) {
-            if (tileSelector->SelectedTileID < 0)
-                return;
-            if (!Editor->LinkedStage)
-                return;
-
-            int p = tilePreviewWindow->GetPlane();
-            int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-            int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-
-            for (int t = tS; t <= tE; t++) {
-                DoAutoTile(t);
-            }
-
-            UpdateTileInfoUI();
-        }
-        void numericUpDownBoxBehaviorFlag_onValueChanged(void* sender, EventArgs* e) {
-            if (tileSelector->SelectedTileID < 0)
-                return;
-            if (!Editor->LinkedStage)
-                return;
-
-            int p = tilePreviewWindow->GetPlane();
-            int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-            int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-
-            for (int t = tS; t <= tE; t++) {
-                Stage::EditableTileConfig* tileData = &Editor->LinkedStage->TileCfg[p][t];
-                tileData->Behavior = (int)numericUpDownBoxBehaviorFlag->Value;
-            }
-
-            UpdateTileInfoUI();
-        }
-        void comboboxOrientation_onSelectedIndexChanged(void* sender, EventArgs* args) {
-            if (tileSelector->SelectedTileID < 0)
-                return;
-            if (!Editor->LinkedStage)
-                return;
-            if (comboboxOrientation->SelectedIndex < 0)
-                return;
-
-            int p = tilePreviewWindow->GetPlane();
-            int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-            int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-
-            for (int t = tS; t <= tE; t++) {
-                Stage::EditableTileConfig* tileData = &Editor->LinkedStage->TileCfg[p][t];
-                tileData->Orientation = comboboxOrientation->SelectedIndex;
-            }
-
-            UpdateTileInfoUI();
-        }
-        void tileSelector_onSelectedTileIDChanged(void* sender, EventArgs* args) {
-            UpdateTileInfoUI();
-        }
-        void checkBoxShowTile_onCheckedChanged(void* sender, EventArgs* args) {
-            tileSelector->ShowTileGraphics = checkBoxShowTile->GetChecked();
-            tileSelector->ShowTileCollision = checkBoxShowCollision->GetChecked();
-        }
-        void radioButtonShow_onCheckedChanged(void* sender, EventArgs* args) {
-            tileSelector->TileCollisionPlane = tilePreviewWindow->GetPlane();
-
-			UpdateTileInfoUI();
-        }
-		void radialKnobAngle_onValueChanged(void* sender, DialValueChangedArgs* args) {
-            if (tileSelector->SelectedTileID < 0)
-                return;
-            if (!Editor->LinkedStage)
-                return;
-
-            int newAngle = (int)args->Value;
-
-            int p = tilePreviewWindow->GetPlane();
-            int tS = M_MIN(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-            int tE = M_MAX(tileSelector->SelectedTileRange_Start, tileSelector->SelectedTileRange_End);
-
-            for (int t = tS; t <= tE; t++) {
-                Stage::EditableTileConfig* tileData = &Editor->LinkedStage->TileCfg[p][t];
-
-                switch (GetAngleEditSide()) {
-                case 0: tileData->AngleTop = newAngle; break;
-                case 1: tileData->AngleLeft = newAngle; break;
-                case 2: tileData->AngleRight = newAngle; break;
-                case 3: tileData->AngleBottom = newAngle; break;
-                }
-            }
-
-			UpdateTileInfoUI();
-		}
-        void radialKnobAngle_onDialTurn(void* sender, DialTurnedArgs* args) {
-            UpdateAngleLabel(args->Value);
         }
     };
     struct TilePlacementToolbar : ToolStrip {
@@ -2580,12 +1252,7 @@ struct SceneEditor : Studio::ResourceEditor {
 
 
                 this->Controls.Add(mainPanel);
-                this->UpdateLayout(); // This should theoretically happen during Controls.Add
-
-                this->Size = {
-                    buttonCancel->Location.X + buttonCancel->Size.Get().W + mainPanel->Padding.Right,
-                    buttonCancel->Location.Y + buttonCancel->Size.Get().H + mainPanel->Padding.Bottom
-                };
+                this->AdjustSize(mainPanel);
             }
             ~Form_EditClass() {
                 delete labelName;
@@ -2683,12 +1350,7 @@ struct SceneEditor : Studio::ResourceEditor {
 
 
                 this->Controls.Add(mainPanel);
-                this->UpdateLayout();
-
-                this->Size = {
-                    buttonCancel->Location.X + buttonCancel->Size.Get().W + mainPanel->Padding.Right,
-                    buttonCancel->Location.Y + buttonCancel->Size.Get().H + mainPanel->Padding.Bottom
-                };
+                this->AdjustSize(mainPanel);
             }
             ~Form_EditProperty() {
                 delete labelName;
@@ -3474,7 +2136,7 @@ struct SceneEditor : Studio::ResourceEditor {
                 if (c_this->Editor->PromptImportTileset()) {
                     // Prompt to "Remap All Tiles?" "Remap all tiles in every layer?\n\nThis action cannot be undone. (Don't show me this again.)"
                     c_this->Editor->tilePlacementField->RemapStampDataToBePlaced();
-                    c_this->Editor->LinkedStage->RemapTileConfig();
+                    c_this->Editor->LinkedStage->Tileset.RemapTileConfig();
                     c_this->Editor->LayerRemapAllTiles();
                 }
             });
@@ -3591,7 +2253,7 @@ struct SceneEditor : Studio::ResourceEditor {
 
             if (w > 0 && h > 0) {
                 delete StampDataToBePlaced;
-                StampDataToBePlaced = Stamp::FromLayer(Editor, CurrentLayer, TileSelectBounds.x, TileSelectBounds.y, w, h);
+                StampDataToBePlaced = Stamp::FromLayer(&Editor->Layers[CurrentLayer], TileSelectBounds.x, TileSelectBounds.y, w, h);
             }
         }
         void Action_SelectSingularEntity(int slot) {
@@ -3750,7 +2412,7 @@ struct SceneEditor : Studio::ResourceEditor {
             else if ((e->Modifier & KMOD_CTRL))
                 collisionValue = Graphics::SOLID_FALLTHROUGH;
 
-            Stamp* stamp = Stamp::FromLayer(Editor, layerIndex, x, y, 1, 1);
+            Stamp* stamp = Stamp::FromLayer(&Editor->Layers[layerIndex], x, y, 1, 1);
             if (clear) {
                 for (int i = 0; i < stamp->Width * stamp->Height; i++) {
                     if (stamp->Data[i] == TILE_EMPTY) continue;
@@ -3799,7 +2461,7 @@ struct SceneEditor : Studio::ResourceEditor {
             else if ((e->Modifier & KMOD_CTRL))
                 collisionValue = Graphics::SOLID_FALLTHROUGH;
 
-            Stamp* stamp = Stamp::FromLayer(Editor, layerIndex, x, y, w, h);
+            Stamp* stamp = Stamp::FromLayer(&Editor->Layers[layerIndex], x, y, w, h);
             if (clear) {
                 for (int i = 0; i < stamp->Width * stamp->Height; i++) {
                     if (stamp->Data[i] == TILE_EMPTY) continue;
@@ -4326,7 +2988,7 @@ struct SceneEditor : Studio::ResourceEditor {
                     if (tileRow[col] == TILE_EMPTY)
                         continue;
 
-                    int newID = Editor->LinkedStage->TileRemapArray[tileRow[col].ID];
+                    int newID = Editor->LinkedStage->Tileset.TileRemapArray[tileRow[col].ID];
                     if (newID == -1)
                         tileRow[col] = TILE_EMPTY;
                     else
@@ -5551,6 +4213,8 @@ struct SceneEditor : Studio::ResourceEditor {
     bool Open();
     bool Save();
 
+    static ResourceFileType GetFileType(Stream* stream);
+
     int GetEditorType();
 
     bool PromptImportTileset();
@@ -5607,7 +4271,7 @@ struct SceneEditor : Studio::ResourceEditor {
     ObjectClasses* objectClasses;
     StampCollection* stampCollection;
     TilePlacementField* tilePlacementField;
-    TileCollisionEditor* tileCollisionEditor;
+    TileCollisionEditorPanel* tileCollisionEditor;
     TilePlacementToolbar* tilePlacementToolbar;
     EntityProperties* entityProperties;
     LayerControls* layerControls;

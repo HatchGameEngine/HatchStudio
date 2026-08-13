@@ -27,10 +27,15 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Libraries/tinyfiledialogs.c
   ${STUDIO_SOURCES_DIR}/Studio/Editors/ResourceEditor.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Editors/SceneEditor.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Editors/TileCollisionEditor.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileCollisionEditorPanel.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileDrawingWidget.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileSelector.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Hashing/MD5.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Hashing/Murmur.cpp
   ${STUDIO_SOURCES_DIR}/Studio/ImageFormats/GIF.cpp
   ${STUDIO_SOURCES_DIR}/Studio/Impl.cpp
+  ${STUDIO_SOURCES_DIR}/Studio/StageTileset.cpp
   ${STUDIO_SOURCES_DIR}/Studio/IO/FileStream.cpp
   ${STUDIO_SOURCES_DIR}/Studio/IO/MemoryStream.cpp
   ${STUDIO_SOURCES_DIR}/Studio/IO/ResourceStream.cpp
@@ -40,6 +45,7 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Control.cpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DialogBox.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/DropDown.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Form.cpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Label.cpp
@@ -76,12 +82,19 @@ target_sources(${PROJECT_NAME} PUBLIC
   ${STUDIO_SOURCES_DIR}/Libraries/tinyfiledialogs.h
   ${STUDIO_SOURCES_DIR}/Studio/Editors/ResourceEditor.hpp
   ${STUDIO_SOURCES_DIR}/Studio/Editors/SceneEditor.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Editors/TileCollisionEditor.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileCollisionEditorPanel.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileDrawingWidget.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/Subcontrols/TileSelector.hpp
   ${STUDIO_SOURCES_DIR}/Studio/Impl.hpp
+  ${STUDIO_SOURCES_DIR}/Studio/StageTileset.hpp
   ${STUDIO_SOURCES_DIR}/UI/Components/Collections.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Button.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ComboBox.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Container.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Control.hpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DialogBox.hpp
+  ${STUDIO_SOURCES_DIR}/UI/Controls/DropDown.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Form.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/Label.hpp
   ${STUDIO_SOURCES_DIR}/UI/Controls/ListView.hpp

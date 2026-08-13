@@ -92,14 +92,13 @@ struct Form : Control {
     void SetTitle(CString title);
     void SetTitle(String* title);
 
-    void RenderClear();
-    void RenderPresent();
-
     virtual void Load();
     void Close();
 
     void Show();
     void ShowDialog(Form* parent, DialogCallback callback);
+
+    void AdjustSize(Control* panel);
 
     void CheckShortcuts(SDL_Keycode key, SDL_Keymod mod);
     Shortcut* RegisterShortcut(int modifiers, int keycode, Control* owner, bool needsFocus, std::function<void()> action);

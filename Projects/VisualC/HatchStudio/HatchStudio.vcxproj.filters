@@ -96,6 +96,12 @@
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Control.cpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\DialogBox.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\DropDown.cpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\UI\Controls\Form.cpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClCompile>
@@ -174,6 +180,21 @@
     <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\SceneEditor.cpp">
       <Filter>Source Files\Studio\Editors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\TileCollisionEditor.cpp">
+      <Filter>Source Files\Studio\Editors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileCollisionEditorPanel.cpp">
+      <Filter>Source Files\Studio\Subcontrols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileDrawingWidget.cpp">
+      <Filter>Source Files\Studio\Subcontrols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileSelector.cpp">
+      <Filter>Source Files\Studio\Subcontrols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\StageTileset.cpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\Libraries\clip.cpp">
       <Filter>Source Files\Libraries</Filter>
     </ClCompile>
@@ -236,6 +257,12 @@
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Control.hpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\DialogBox.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\UI\Controls\DropDown.hpp">
+      <Filter>Source Files\UI\Controls</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\UI\Controls\Form.hpp">
       <Filter>Source Files\UI\Controls</Filter>
     </ClInclude>
@@ -278,7 +305,16 @@
     <ClInclude Include="..\..\..\Source\Editor\UI\Components\Collections.hpp">
       <Filter>Source Files\UI\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Enums.hpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Studio\Impl.hpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\StageTileset.hpp">
+      <Filter>Source Files\Studio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Structs.hpp">
       <Filter>Source Files\Studio</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\ResourceEditor.hpp">

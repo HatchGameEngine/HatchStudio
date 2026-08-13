@@ -9,9 +9,6 @@
 #include <Hatch/IO/Stream.h>
 #include <Hatch/IO/FileStream.h>
 
-#include <Libraries/stb_image.h>
-#include <Libraries/stb_image_write.h>
-
 #include <Hatch/Diagnostics.h>
 #include <Hatch/GameLinker.h>
 #include <Hatch/Graphics.h>
@@ -40,42 +37,13 @@
 #include <UI/Filesystem/Paths.hpp>
 #include <UI/System/SystemDialog.hpp>
 
+#include <Studio/Subcontrols/TileCollisionEditorPanel.hpp>
+#include <Studio/Subcontrols/TileSelector.hpp>
+
 #include <Studio/Editors/SceneEditor.hpp>
 
-#define TOLOWER(ch) SDL_tolower(ch)
-
-char* stristr(const char* str1, const char* str2) {
-    const char* p1 = str1;
-    const char* p2 = str2;
-    const char* r = *p2 == 0 ? str1 : 0;
-
-    while (*p1 != 0 && *p2 != 0) {
-        if (TOLOWER((unsigned char)*p1) == TOLOWER((unsigned char)*p2)) {
-            if (r == 0) {
-                r = p1;
-            }
-
-            p2++;
-        }
-        else {
-            p2 = str2;
-            if (r != 0) {
-                p1 = r + 1;
-            }
-
-            if (TOLOWER((unsigned char)*p1) == TOLOWER((unsigned char)*p2)) {
-                r = p1;
-                p2++;
-            }
-            else {
-                r = 0;
-            }
-        }
-
-        p1++;
-    }
-    return *p2 == 0 ? (char*)r : 0;
-}
+#define MAGIC_SCENE_HSCN 0x4E435348
+#define MAGIC_SCENE_RSDK 0x004E4353
 
 // Reset the state for a new file
 void SceneEditor::Init() {
@@ -117,6 +85,8 @@ void SceneEditor::New() {
     Init();
 
     LinkedStage = new Stage();
+    tileSelector->SetTileset(&LinkedStage->Tileset);
+    tileCollisionEditor->SetTileset(&LinkedStage->Tileset);
 
     LayerNew(0);
     tilePlacementField->CurrentLayer = 0;
@@ -141,7 +111,7 @@ bool SceneEditor::Read_RSDK(Stream* stream) {
     char streamStringBuffer[256];
 
     // Signature checking
-    if (stream->ReadUInt32() == 0x004E4353) {
+    if (stream->ReadUInt32() == MAGIC_SCENE_RSDK) {
         // Editor metadata
         // stream->Skip(16); // 16 bytes
         stream->ReadByte(); // ?
@@ -422,7 +392,6 @@ bool SceneEditor::Read_HatchTiled(Stream* stream) {
 }
 bool SceneEditor::Read_HatchLite(Stream* stream) {
     char streamStringBuffer[256];
-    const Uint32 MAGIC_HSCN = 0x4E435348;
     // .HSCN
     // Read String to get the resource path of the stage.
     // Check loaded Stage list by resource path, if not found,
@@ -431,7 +400,7 @@ bool SceneEditor::Read_HatchLite(Stream* stream) {
     // Give up. Do not load the scene.
 
     // Read magic
-    if (stream->ReadUInt32() != MAGIC_HSCN) {
+    if (stream->ReadUInt32() != MAGIC_SCENE_HSCN) {
         return false;
     }
 
@@ -637,11 +606,10 @@ bool SceneEditor::Read_HatchLite(Stream* stream) {
 }
 bool SceneEditor::Write_HatchLite(Stream* stream) {
     char streamStringBuffer[256];
-    const Uint32 MAGIC_HSCN = 0x4E435348;
     // .HSCN
 
     // Read magic
-    stream->WriteUInt32(MAGIC_HSCN);
+    stream->WriteUInt32(MAGIC_SCENE_HSCN);
 
     // Read version
     stream->WriteByte(HSCN_VERSION.major);   // MAJOR version when you make incompatible API changes,
@@ -811,25 +779,8 @@ bool SceneEditor::Open() {
 
     Init();
 
-    enum class LoadType {
-        Unknown,
-        RSDKv5,
-        Tiled,
-        HatchLite,
-    } loadType;
-
-    if (stristr(filename, ".tmx") != NULL)
-        loadType = LoadType::Tiled;
-    else if (stristr(filename, ".hscn") != NULL)
-        loadType = LoadType::HatchLite;
-    else if (strstr(filename, ".bin") != NULL && strstr(filename, "Scene") != NULL)
-        loadType = LoadType::RSDKv5;
-    else
-        loadType = LoadType::Unknown;
-
-
     // If RSDK
-    if (loadType == LoadType::RSDKv5) {
+    if (FileType == ResourceFileType::Scene_RSDKv5) {
         LinkedStage = new Stage();
 
         // Should load GameConfig before StageConfig
@@ -841,13 +792,13 @@ bool SceneEditor::Open() {
         }
 
         // Load tile collisions & info
-        if (!LinkedStage->OpenTileConfig(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "TileConfig.bin"))) {
+        if (!LinkedStage->Tileset.OpenTileConfig(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "TileConfig.bin"))) {
             fprintf(stderr, "OpenTileConfig failed with reason: %s\n", Diagnostics::ErrorString);
             return false;
         }
 
         // Load tile image data & hashes
-        if (!LinkedStage->LoadTileset_RSDK(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "16x16Tiles.gif"))) {
+        if (!LinkedStage->Tileset.LoadTileset_RSDK(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "16x16Tiles.gif"))) {
             fprintf(stderr, "LoadTileset_RSDK failed with reason: %s\n", Diagnostics::ErrorString);
             return false;
         }
@@ -867,16 +818,16 @@ bool SceneEditor::Open() {
         }
     }
     // If Hatch1 & Tiled
-    else if (loadType == LoadType::Tiled) {
+    else if (FileType == ResourceFileType::Scene_Tiled) {
         LinkedStage = new Stage();
     }
     // If HatchLite
-    else if (loadType == LoadType::HatchLite) {
+    else if (FileType == ResourceFileType::Scene_HatchLite) {
         // If cannot find LinkedStage in memory, make new LinkedStage
         LinkedStage = new Stage();
 
         // Load tile collisions & info "TileInfo.HCOL"
-        if (!LinkedStage->OpenTileConfig(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "TileCol.bin"))) {
+        if (!LinkedStage->Tileset.OpenTileConfig(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "TileCol.bin"))) {
             fprintf(stderr, "OpenTileConfig failed with reason: %s\n", Diagnostics::ErrorString);
             return false;
         }
@@ -980,6 +931,8 @@ bool SceneEditor::Open() {
     layerControls->UpdateList();
     objectClasses->UpdateClassList();
     entityProperties->UpdateEntityList();
+    tileSelector->SetTileset(&LinkedStage->Tileset);
+    tileCollisionEditor->SetTileset(&LinkedStage->Tileset);
 
     if (LayerCount > 0) {
         if (tilePlacementField->CurrentLayer >= 0)
@@ -1008,13 +961,30 @@ bool SceneEditor::Save() {
         return false;
     }
 
-    LinkedStage->SaveTileConfig(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "TileCol.bin"));
+    LinkedStage->Tileset.SaveTileConfig(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "TileCol.bin"));
     StampCollectionSave(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Stamps.HSTM"));
     TilesetSave(UI::Filesystem::Paths::GetSiblingFilePath(stringBuffer, filename, "Tileset.png"));
 
     SetChangesSaved();
     JustCreated = false;
     return true;
+}
+
+ResourceFileType SceneEditor::GetFileType(Stream* stream) {
+    Uint32 magic = stream->ReadUInt32();
+
+    stream->Skip(-sizeof(Uint32));
+
+    switch (magic) {
+    case MAGIC_SCENE_HSCN:
+        return ResourceFileType::Scene_HatchLite;
+    case MAGIC_SCENE_RSDK:
+        return ResourceFileType::Scene_RSDKv5;
+    default:
+        break;
+    }
+
+    return ResourceFileType::Unknown;
 }
 
 int SceneEditor::GetEditorType() {
@@ -1040,285 +1010,26 @@ bool SceneEditor::PromptImportTileset() {
 }
 
 bool SceneEditor::TilesetImport(List<char*>& filenames) {
-    int maxTileCount = TILE_IDENT_MASK + 1;
+    if (LinkedStage->Tileset.Import(filenames, &Stamps)) {
+        LinkedStage->Tileset.TileCount = LinkedStage->Tileset.ImageTileCount;
 
-    const int MAX_SHEET_HEIGHT = 1024;
-    const int MAX_TILE_PIXELS = 1024 * 1024;
+        // Update tileSelector
+        tileSelector->ResizeChildren();
 
-    const int dstColumnCount = 64;
-    const int dstColumnMask = 63;
-    const int dstColumnBitshift = 6;
+        StampCollectionUpdateUI();
 
-    int tileset_w = 1;
-    int tileset_h = 1;
-    int tileset_comp;
-
-	Uint32* tileSrc;
-	Uint32* tileDst;
-
-    Uint32* newTilesetImageData = (Uint32*)calloc(1024 * 1024 * 4, sizeof(Uint32));
-    if (!newTilesetImageData) {
-        Diagnostics::SetError("Could not allocate space for tileset image data.");
-        return false;
+        return true;
     }
-
-    Stage::TileImageHash* oldTileHashes = (Stage::TileImageHash*)malloc(sizeof(LinkedStage->TileHashes));
-    if (!oldTileHashes) {
-        Diagnostics::SetError("Could not allocate space for old tileset hash data.");
-        return false;
-    }
-
-    memcpy(oldTileHashes, LinkedStage->TileHashes, sizeof(LinkedStage->TileHashes));
-    memset(LinkedStage->TileHashes, 0x00, sizeof(LinkedStage->TileHashes));
-
-    Tile* tileArray = (Tile*)malloc(1 * 1 * sizeof(Tile));
-    if (!tileArray) {
-        Diagnostics::SetError("Could not allocate space for stamp tile data.");
-        return false;
-    }
-
-    int tile = 0;
-    for (int i = 0; i < filenames.Count(); i++) {
-        unsigned char* tileset_imagedata = stbi_load(filenames[i], &tileset_w, &tileset_h, &tileset_comp, STBI_rgb_alpha);
-        if (!tileset_imagedata) {
-            Diagnostics::SetError(stbi_failure_reason());
-            return false;
-        }
-
-        const int srcRowCount = tileset_h / 16;
-        const int srcColumnCount = tileset_w / 16;
-
-        if (!tileArray || srcRowCount == 0 || srcColumnCount == 0)
-            return false;
-
-        tileArray = (Tile*)realloc(tileArray, srcRowCount * srcColumnCount * sizeof(Tile));
-        if (!tileArray) {
-            Diagnostics::SetError("Could not allocate space for stamp tile data.");
-            return false;
-        }
-
-        Pixel emptyTileImageData[TILE_SIZE * TILE_SIZE];
-        memset(emptyTileImageData, 0, sizeof(emptyTileImageData));
-        Uint32 emptyTileHash = Murmur_HashData(&emptyTileImageData[0], sizeof(emptyTileImageData)).A;
-
-        // for every "tile" in the file's tilesheet
-        int tind = 0;
-        for (int row = 0; row < srcRowCount; row++) {
-            for (int col = 0; col < srcColumnCount; col++) {
-                if (tile == maxTileCount)
-                    goto TotalTiles;
-
-                // get the hash of every pixel in the tile
-                Pixel currentTileImageData[TILE_SIZE * TILE_SIZE];
-
-                Uint32* tileDst = &newTilesetImageData[(tile & dstColumnMask) * TILE_SIZE + (tile & ~dstColumnMask) * TILE_SIZE * TILE_SIZE];
-                Uint32* tileSrc = &((Uint32*)tileset_imagedata)[col * TILE_SIZE + row * TILE_SIZE * srcColumnCount * TILE_SIZE];
-                for (int pxrow = 0, ySrc = 0, yDst = 0; pxrow < TILE_SIZE; pxrow++) {
-                    // Store pixel data for hashing
-                    for (int xSrc = 0; xSrc < TILE_SIZE; xSrc++) {
-                        Color color = tileSrc[xSrc + ySrc];
-                        Pixel* pixel = &currentTileImageData[xSrc + pxrow * TILE_SIZE];
-
-                        *pixel = color;
-                        if (color.A == 0x00)
-                            pixel->Full = 0;
-                    }
-
-                    // Copy tile line anyways, if it does but it's already used, it'll get overwritten
-                    memcpy(&tileDst[yDst], &tileSrc[ySrc], TILE_SIZE * sizeof(Uint32));
-                    ySrc += srcColumnCount * TILE_SIZE;
-                    yDst += dstColumnCount * TILE_SIZE;
-                }
-
-                // Check for empty tile image, and if so, write it as empty and go to next source tile
-                Uint32 srcHash = Murmur_HashData(&currentTileImageData[0], sizeof(currentTileImageData)).A;
-                if (srcHash == emptyTileHash) {
-                    tileArray[tind] = TILE_EMPTY;
-                    goto NextSourceTile;
-                }
-
-                // Check for duplicate tile image, and if so, write it as that tile, and go to next source tile
-                for (int t = 0; t < tile; t++) {
-                    if (LinkedStage->TileHashes[t].FLIP_NONE == srcHash) {
-                        tileArray[tind] = Tile(0);
-                        tileArray[tind].PlaneA = 3;
-                        tileArray[tind].PlaneB = 3;
-                        tileArray[tind].ID = t;
-                        goto NextSourceTile;
-                    }
-                }
-
-                // Otherwise, this is a unique tile, write it as itself
-                tileArray[tind] = Tile(0);
-                tileArray[tind].PlaneA = 3;
-                tileArray[tind].PlaneB = 3;
-                tileArray[tind].ID = tile;
-
-                // Set the tile hash
-                LinkedStage->TileHashes[tile].FLIP_NONE = srcHash;
-                tile++;
-            NextSourceTile:
-                tind++;
-            }
-        }
-
-        // Create stamp
-        char filenameBuffer[256];
-        const char* STAMP_FILENAME_PREFIX = "Stamp_";
-        if (strncmp(STAMP_FILENAME_PREFIX, UI::Filesystem::Paths::GetFilenameWithoutExtension(filenameBuffer, filenames[i]), strlen(STAMP_FILENAME_PREFIX)) == 0) {
-            StampCollectionAdd(filenameBuffer + strlen(STAMP_FILENAME_PREFIX),
-                Stamp::FromTileArray(tileArray, srcColumnCount, srcRowCount));
-        }
-
-        stbi_image_free(tileset_imagedata);
-    }
-
-    TotalTiles:
-	if (tile == 0)
-		goto FreeMemoryAndFail;
-
-    LinkedStage->TileCount = tile;
-
-    // Flip tiles horizontally
-    tileSrc = &newTilesetImageData[0];
-    tileDst = &newTilesetImageData[MAX_TILE_PIXELS];
-    for (int line = 0; line < 0x1000 * TILE_SIZE; line++) {
-        // int xSrc = 0;
-        // int xDst = TILE_SIZE - 1;
-        // for (; xSrc < TILE_SIZE; ) {
-        //     tileDst[xDst] = tileSrc[xSrc];
-        //     xSrc++;
-        //     xDst--;
-        // }
-
-        // Loop unrolled:
-        tileDst[15] = tileSrc[0];
-        tileDst[14] = tileSrc[1];
-        tileDst[13] = tileSrc[2];
-        tileDst[12] = tileSrc[3];
-        tileDst[11] = tileSrc[4];
-        tileDst[10] = tileSrc[5];
-        tileDst[9] = tileSrc[6];
-        tileDst[8] = tileSrc[7];
-        tileDst[7] = tileSrc[8];
-        tileDst[6] = tileSrc[9];
-        tileDst[5] = tileSrc[10];
-        tileDst[4] = tileSrc[11];
-        tileDst[3] = tileSrc[12];
-        tileDst[2] = tileSrc[13];
-        tileDst[1] = tileSrc[14];
-        tileDst[0] = tileSrc[15];
-        tileSrc += TILE_SIZE; // Move to next line
-        tileDst += TILE_SIZE; // Move to next line
-    }
-
-    // Flip tiles vertically
-    tileSrc = &newTilesetImageData[0];
-    tileDst = &newTilesetImageData[MAX_TILE_PIXELS << 1];
-    for (int tileRow = 0; tileRow < MAX_SHEET_HEIGHT / TILE_SIZE; ) {
-        for (int row = 0, ySrc = 0, yDst = dstColumnCount * TILE_SIZE * (TILE_SIZE - 1); row < TILE_SIZE; row++) {
-            // Copy tile line
-            memcpy(&tileDst[yDst], &tileSrc[ySrc], dstColumnCount * TILE_SIZE * sizeof(Uint32));
-            ySrc += dstColumnCount * TILE_SIZE;
-            yDst -= dstColumnCount * TILE_SIZE;
-        }
-
-        tileSrc += dstColumnCount * TILE_SIZE * TILE_SIZE;
-        tileDst += dstColumnCount * TILE_SIZE * TILE_SIZE;
-        tileRow++;
-    }
-
-    // Flip tiles horizontally & vertically
-    tileSrc = &newTilesetImageData[MAX_TILE_PIXELS << 1];
-    tileDst = &newTilesetImageData[MAX_TILE_PIXELS << 1 | MAX_TILE_PIXELS];
-    for (int line = 0; line < 0x1000 * TILE_SIZE; line++) {
-        // int xSrc = 0;
-        // int xDst = TILE_SIZE - 1;
-        // for (; xSrc < TILE_SIZE; ) {
-        //     tileDst[xDst] = tileSrc[xSrc];
-        //     xSrc++;
-        //     xDst--;
-        // }
-
-        // Loop unrolled:
-        tileDst[15] = tileSrc[0];
-        tileDst[14] = tileSrc[1];
-        tileDst[13] = tileSrc[2];
-        tileDst[12] = tileSrc[3];
-        tileDst[11] = tileSrc[4];
-        tileDst[10] = tileSrc[5];
-        tileDst[9] = tileSrc[6];
-        tileDst[8] = tileSrc[7];
-        tileDst[7] = tileSrc[8];
-        tileDst[6] = tileSrc[9];
-        tileDst[5] = tileSrc[10];
-        tileDst[4] = tileSrc[11];
-        tileDst[3] = tileSrc[12];
-        tileDst[2] = tileSrc[13];
-        tileDst[1] = tileSrc[14];
-        tileDst[0] = tileSrc[15];
-        tileSrc += TILE_SIZE; // Move to next line
-        tileDst += TILE_SIZE; // Move to next line
-    }
-
-    // Update tile image data
-    for (int f = 0; f < 4; f++) {
-        Studio::Textures::CreateTextureFromSTBI(&LinkedStage->TileImageTextures[f], (Uint8*)&newTilesetImageData[f * MAX_TILE_PIXELS], 1024, 1024);
-    }
-
-    // Create the tile remapping array
-    for (int oldID = 0; oldID < 0x1000; oldID++) {
-        // Set conversion value to default of "no-conversion"
-        LinkedStage->TileRemapArray[oldID] = -1;
-        // Set conversion value to pass-through
-        LinkedStage->TileRemapArray[oldID] = oldID;
-
-        // Match for any tiles from old to new,
-        // and if new tile is an old one, set the conversion value to the new ID.
-        for (int newID = 0; newID < LinkedStage->TileCount; newID++) {
-            if (oldTileHashes[oldID].FLIP_NONE != 0 &&
-                oldTileHashes[oldID].FLIP_NONE == LinkedStage->TileHashes[newID].FLIP_NONE) {
-                LinkedStage->TileRemapArray[oldID] = newID;
-                break;
-            }
-        }
-    }
-
-FreeMemoryAndSucceed:
-    if (LinkedStage->TileImagePixelData)
-        free(LinkedStage->TileImagePixelData);
-    LinkedStage->TileImagePixelData = newTilesetImageData;
-
-    free(oldTileHashes);
-    free(tileArray);
-
-    // Update tileSelector
-    tileSelector->ResizeChildren();
-
-    return true;
-
-FreeMemoryAndFail:
-    LinkedStage->TileImagePixelData = NULL;
-
-    free(newTilesetImageData);
-    free(oldTileHashes);
-    free(tileArray);
 
     return false;
 }
 bool SceneEditor::TilesetOpen(CString filename) {
     List<char*> filenames;
     filenames.Add((char*)filename);
-    TilesetImport(filenames);
-    return true;
+    return TilesetImport(filenames);
 }
 bool SceneEditor::TilesetSave(CString filename) {
-    int pitch;
-    Uint32* pixels;
-    SDL_Texture* texture = LinkedStage->TileImageTextures[0];
-
-    stbi_write_png(filename, 1024, 1024, 4, LinkedStage->TileImagePixelData, 1024 * 4);
-    return true;
+    return LinkedStage->Tileset.Save(filename);
 }
 
 // Data Functions
@@ -1589,7 +1300,7 @@ void SceneEditor::LayerRemapAllTiles() {
                 if (tileRow[col] == TILE_EMPTY)
                     continue;
 
-                int newID = LinkedStage->TileRemapArray[tileRow[col].ID];
+                int newID = LinkedStage->Tileset.TileRemapArray[tileRow[col].ID];
                 if (newID == -1)
                     tileRow[col] = TILE_EMPTY;
                 else
@@ -1894,9 +1605,9 @@ SceneEditor::SceneEditor() : ResourceEditor() {
     TabPage* tabPageObjects = StupidGC(new TabPage("Objects"));
     TabPage* tabPageLayers = StupidGC(new TabPage("Layers"));
     TabPage* tabPageSettings = StupidGC(new TabPage("Settings"));
-    tileSelector = new TileSelector(this);
+    tileSelector = new TileSelector(NULL);
     stampCollection = new StampCollection(this);
-    tileCollisionEditor = new TileCollisionEditor(this);
+    tileCollisionEditor = new TileCollisionEditorPanel(this);
     tilePlacementField = new TilePlacementField(this);
     entityProperties = new EntityProperties(this);
     objectClasses = new ObjectClasses(this);
@@ -1941,7 +1652,8 @@ SceneEditor::SceneEditor() : ResourceEditor() {
     buttonImportTileset->onClick += [this](auto* a, auto* d) -> void {
         if (PromptImportTileset()) {
             tilePlacementField->RemapStampDataToBePlaced();
-            LinkedStage->RemapTileConfig();
+            tileCollisionEditor->SetTileset(&LinkedStage->Tileset);
+            LinkedStage->Tileset.RemapTileConfig();
             LayerRemapAllTiles();
         }
     };
@@ -1971,7 +1683,7 @@ SceneEditor::SceneEditor() : ResourceEditor() {
     // splitterMain
     splitterMain->Dock = DOCK_FILL;
     splitterMain->Size = { 1000, 1000 };
-    splitterMain->SplitterDistance = tileSelector->Padding.Horizontal() + tileSelector->TileSpace * 16 + 16;
+    splitterMain->SplitterDistance = tileSelector->Padding.Horizontal() + tileSelector->TileSpaceH * 16 + 16;
     splitterMain->BackColor = Color(0x000000, 0x00);
     splitterMain->Panel1->BackColor = Color(0x000000, 0x00);
     splitterMain->Panel2->BackColor = Color(0x000000, 0x00);
@@ -1979,7 +1691,7 @@ SceneEditor::SceneEditor() : ResourceEditor() {
 
     splitterMain->Panel1->Controls.Add(leftTab);
     splitterMain->Panel2->Controls.Add(splitterField);
-    splitterMain->Panel1MinSize = tileSelector->Padding.Horizontal() + tileSelector->TileSize + 16;
+    splitterMain->Panel1MinSize = tileSelector->Padding.Horizontal() + tileSelector->TileWidth + 16;
 
     // splitterField
     splitterField->Dock = DOCK_FILL;
@@ -2091,8 +1803,12 @@ SceneEditor::~SceneEditor() {
 void SceneEditor::LinkScene() {
 	// Link currently active scene
 	Scene::Layers = this->Layers;
-	Graphics::TileImageData = this->LinkedStage->TileImageTextures;
-	Graphics::TileCollisionImageData = this->LinkedStage->TileCollisionTextures;
+
+	if (this->LinkedStage) {
+		Graphics::TileImageData = this->LinkedStage->Tileset.TileImageTexture;
+		Graphics::TileCollisionImageData = this->LinkedStage->Tileset.TileCollisionTextures;
+	}
+
 	Scene::CurrentEntity = this->CurrentEntity;
 	Scene::EntitySlots = this->EntitySlots;
 	Scene::ClassIndexList = this->ClassIndexList;

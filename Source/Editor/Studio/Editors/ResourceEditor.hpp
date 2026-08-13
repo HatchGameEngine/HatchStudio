@@ -1,11 +1,14 @@
 #pragma once
 
+#include <Studio/Enums.hpp>
+
 #include <UI/Controls/TabControls.hpp>
 
 namespace Studio {
     struct ResourceEditor : TabPage {
     public:
         String FilePath;
+        ResourceFileType FileType;
         bool UnsavedChanges;
         bool JustCreated;
 
@@ -17,6 +20,7 @@ namespace Studio {
         virtual int GetEditorType() = 0;
 
         bool Open(CString filename);
+        bool Open(CString filename, ResourceFileType fileType);
         bool SaveAs(CString filename);
         bool CloseFile();
 

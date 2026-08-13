@@ -46,6 +46,7 @@
 
 #include <Studio/Editors/ResourceEditor.hpp>
 #include <Studio/Editors/SceneEditor.hpp>
+#include <Studio/Editors/TileCollisionEditor.hpp>
 #include <Studio/Project.hpp>
 
 // using UI::Graphics;
@@ -55,6 +56,41 @@ using Studio::ResourceEditor;
 namespace Hatch { }
 namespace UI { }
 namespace Studio { }
+
+#define TOLOWER(ch) SDL_tolower(ch)
+
+char* stristr(const char* str1, const char* str2) {
+    const char* p1 = str1;
+    const char* p2 = str2;
+    const char* r = *p2 == 0 ? str1 : 0;
+
+    while (*p1 != 0 && *p2 != 0) {
+        if (TOLOWER((unsigned char)*p1) == TOLOWER((unsigned char)*p2)) {
+            if (r == 0) {
+                r = p1;
+            }
+
+            p2++;
+        }
+        else {
+            p2 = str2;
+            if (r != 0) {
+                p1 = r + 1;
+            }
+
+            if (TOLOWER((unsigned char)*p1) == TOLOWER((unsigned char)*p2)) {
+                r = p1;
+                p2++;
+            }
+            else {
+                r = 0;
+            }
+        }
+
+        p1++;
+    }
+    return *p2 == 0 ? (char*)r : 0;
+}
 
 // .HSPR - Sprite File
 // .HMSH - 3D Mesh File
@@ -297,6 +333,7 @@ struct HatchStudioForm : Form {
     UI::Menu* mainMenu = NULL;
     UI::Menu* menuFile = NULL;
     UI::Menu* menuRecentProjects = NULL;
+    UI::Menu* menuNewResource = NULL;
     UI::Menu* menuProject = NULL;
     UI::Menu* menuRunFromScene = NULL;
     UI::Menu* menuHelp = NULL;
@@ -380,8 +417,11 @@ struct HatchStudioForm : Form {
     static void Action_ClearRecentProjects() {
         MainForm->ClearRecentProjects();
     }
-    static void Action_NewResource() {
-        MainForm->NewFile();
+    static void Action_NewSceneResource() {
+        MainForm->NewSceneFile();
+    }
+    static void Action_NewTileCollisionResource() {
+        MainForm->NewTileCollisionFile();
     }
     static void Action_OpenResource() {
         UI::SystemDialog::OpenFileData ofd;
@@ -389,7 +429,7 @@ struct HatchStudioForm : Form {
         // ofd.InitialDirectory = MainForm->CurrentProjectFilePath; + "Scene.hscn"
         ofd.FilterPatterns.Add("*.hscn");
         // ofd.FilterPatterns.Add("*.tmx");
-        // ofd.FilterPatterns.Add("*.bin");
+        ofd.FilterPatterns.Add("*.bin");
         ofd.Multiselect = false;
 
         if (UI::SystemDialog::OpenFile(&ofd)) {
@@ -516,6 +556,7 @@ struct HatchStudioForm : Form {
         mainMenu = new UI::Menu();
         menuFile = new UI::Menu();
         menuRecentProjects = new UI::Menu();
+        menuNewResource = new UI::Menu();
         menuProject = new UI::Menu();
         menuRunFromScene = new UI::Menu();
         menuHelp = new UI::Menu();
@@ -526,7 +567,7 @@ struct HatchStudioForm : Form {
         menuFile->AddSubmenu("Recent Projects", menuRecentProjects, 'R');
         menuFile->AddItem("Close Project", Action_CloseProject, SHORTCUT_CLOSE_PROJECT, true, UI::Menu::ItemType::IT_TEXT, 'C');
         menuFile->AddSeparator();
-        menuFile->AddItem("New Resource...", Action_NewResource, SHORTCUT_NEW_FILE, true);
+        menuFile->AddSubmenu("New Resource", menuNewResource, SHORTCUT_NEW_FILE);
         menuFile->AddItem("Open Resource...", Action_OpenResource, SHORTCUT_OPEN_FILE, true);
         menuFile->AddSeparator();
         menuIndex_SaveFile = menuFile->AddItem("Save", Action_SaveResource, SHORTCUT_SAVE_FILE, true, UI::Menu::ItemType::IT_TEXT, 'S');
@@ -548,6 +589,10 @@ struct HatchStudioForm : Form {
             menuRecentProjects->AddSeparator();
         }
         menuRecentProjects->AddItem("Clear Recent Projects", Action_ClearRecentProjects, UI::Menu::SM_NONE, true);
+
+        // "New Resource" menu
+        menuNewResource->AddItem("Scene", Action_NewSceneResource, UI::Menu::SM_NONE, true);
+        menuNewResource->AddItem("Tile Collision", Action_NewTileCollisionResource, UI::Menu::SM_NONE, true);
 
         // "Project" menu
         menuProject->AddItem("Build Game Logic", Action_BuildGameLogic, SHORTCUT_BUILD_GAME_LOGIC, false);
@@ -906,13 +951,24 @@ struct HatchStudioForm : Form {
         return true;
     }
 
-    void NewFile() {
-        ResourceEditor* editor = new SceneEditor();
-        editor->New();
+    void AddEditor(ResourceEditor* editor) {
         Editors.Insert(0, editor);
         MainTabControl->TabPages.Insert(0, editor);
 
         MainTabControl->Select(0);
+    }
+
+    void NewSceneFile() {
+        ResourceEditor* editor = new SceneEditor();
+        editor->New();
+
+        AddEditor(editor);
+    }
+    void NewTileCollisionFile() {
+        ResourceEditor* editor = new TileCollisionEditor();
+        editor->New();
+
+        AddEditor(editor);
     }
     bool OpenFile(const char* filepath) {
         char resourceFolder[1024];
@@ -939,15 +995,52 @@ struct HatchStudioForm : Form {
             return false;
         }
 
-        ResourceEditor* editor = new SceneEditor();
-        if (!editor->Open(filepath)) {
+        return OpenEditorForFile(filepath);
+    }
+    bool OpenEditorForFile(const char* filepath) {
+        ResourceEditor* editor = NULL;
+
+        bool didOpen = false;
+
+        // Figure out file format
+        ResourceFileType fileType = ResourceFileType::Unknown;
+
+        if (stristr(filepath, ".tmx") != NULL) {
+            fileType = ResourceFileType::Scene_Tiled;
+        }
+        else {
+            Stream* stream = FileStream::New(filepath, FileStream::READ_ACCESS);
+            if (!stream) {
+                Diagnostics::SetError("Could not open file: %s", Diagnostics::ErrorString);
+                return false;
+            }
+
+            // Check if SceneEditor supports it
+            fileType = SceneEditor::GetFileType(stream);
+            if (fileType != ResourceFileType::Unknown) {
+                editor = new SceneEditor();
+                didOpen = editor->Open(filepath, fileType);
+            }
+
+            // Check if TileCollisionEditor supports it
+            if (fileType == ResourceFileType::Unknown) {
+                fileType = TileCollisionEditor::GetFileType(stream);
+                if (fileType != ResourceFileType::Unknown) {
+                    editor = new TileCollisionEditor();
+                    didOpen = editor->Open(filepath, fileType);
+                }
+            }
+
+            stream->Close();
+        }
+
+        if (!didOpen) {
+            Diagnostics::SetError("Unknown or invalid file format.");
             delete editor;
             return false;
         }
-        Editors.Insert(0, editor);
-        MainTabControl->TabPages.Insert(0, editor);
 
-        MainTabControl->Select(0);
+        AddEditor(editor);
         return true;
     }
 
@@ -957,10 +1050,17 @@ struct HatchStudioForm : Form {
         switch (editorType) {
         case EditorTypes::SCENE:
             PresenceState = "Editing a scene";
-            ReflectCurrentFileEditorChange();
-            UpdatePresence();
+            break;
+        case EditorTypes::SPRITE:
+            PresenceState = "Editing a sprite";
+            break;
+        case EditorTypes::TILECONFIG:
+            PresenceState = "Editing tile collision";
             break;
         }
+
+        ReflectCurrentFileEditorChange();
+        UpdatePresence();
     }
 
     void Load() {

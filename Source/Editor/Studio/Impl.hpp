@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL2/SDL.h>
+
 #include <UI/Components/Collections.hpp>
 
 struct Stream;
@@ -151,7 +153,7 @@ namespace Graphics {
 
     extern int DrawCollision;
 
-    extern SDL_Texture** TileImageData;
+    extern SDL_Texture* TileImageData;
     extern SDL_Texture** TileCollisionImageData;
 
     void Init();

@@ -183,13 +183,6 @@ struct Event {
     }
 };
 
-template <class ItemType>
-class ArrayList : public List<ItemType> {
-protected:
-    bool IsFixedSize() const noexcept { return false; };
-    bool IsReadOnly() const noexcept { return false; };
-};
-
 enum DockStyle {
     DOCK_NONE,
     DOCK_TOP,
@@ -221,6 +214,7 @@ struct ControlCollection {
     void Clear();
     int  IndexOf(Control* control);
     bool Contains(Control* control);
+    Control* Last();
     void RemoveAt(int index);
     void Remove(Control* control);
     int  Count();

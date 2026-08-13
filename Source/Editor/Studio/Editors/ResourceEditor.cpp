@@ -16,21 +16,44 @@ namespace Studio {
     ResourceEditor::ResourceEditor() : TabPage() {
         Strings::Init(&FilePath, 1);
 
-        SetChangesUnsaved();
-
+        UnsavedChanges = false;
         JustCreated = false;
+        UpdateTitle();
     }
 
     bool ResourceEditor::Open(CString filename) {
         Strings::FromCString(&FilePath, filename, 0);
 
-        SetChangesSaved();
+        if (Open()) {
+            UpdateTitle();
 
-        return Open();
+            return true;
+        }
+
+        return false;
+    }
+    bool ResourceEditor::Open(CString filename, ResourceFileType fileType) {
+        Strings::FromCString(&FilePath, filename, 0);
+        FileType = fileType;
+
+        if (Open()) {
+            UpdateTitle();
+
+            return true;
+        }
+
+        return false;
     }
     bool ResourceEditor::SaveAs(CString filename) {
         Strings::FromCString(&FilePath, filename, 0);
-        return Save();
+
+        if (Save()) {
+            UpdateTitle();
+
+            return true;
+        }
+
+        return false;
     }
     bool ResourceEditor::CloseFile() {
         if (UnsavedChanges) {

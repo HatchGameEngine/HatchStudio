@@ -14,6 +14,8 @@ Label::Label() : Control() {
     CanFocus = false;
 
 	Size = { 100, 20 };
+
+	AlignFlags = TEXT_ALIGN_LEFT | TEXT_VALIGN_MIDDLE;
 }
 Label::Label(CString text) : Label() {
 	Strings::FromCString(&Text, text, 0);
@@ -33,9 +35,16 @@ void Label::SetText(String* text) {
 	::Size outputSize = internal_Size;
 	UI::Graphics::Font::Face* Typeface = UI::Graphics::Font::Arial[12];
 
-	UI::Graphics::Renderer::MeasureFont(&Text, Typeface, &outputSize.W, &outputSize.H);
+	if (WordWrap && MaxWrapWidth > 0.0f) {
+		UI::Graphics::Renderer::MeasureFontWrapped(&Text, Typeface, MaxWrapWidth, &outputSize.W, &outputSize.H);
 
-	outputSize.H = Typeface->Ascent - Typeface->Descent;
+		outputSize.H += Typeface->Ascent - Typeface->Descent;
+	}
+	else {
+		UI::Graphics::Renderer::MeasureFont(&Text, Typeface, &outputSize.W, &outputSize.H);
+
+		outputSize.H = Typeface->Ascent - Typeface->Descent;
+	}
 
 	outputSize.W += Padding.Horizontal();
 	outputSize.H += Padding.Vertical();
@@ -49,6 +58,23 @@ void Label::Render() {
 
 	UI::Graphics::Renderer::DrawRect(&bounds, BackColor);
 
-	UI::Graphics::Renderer::DrawFont(&Text, Typeface,
-        bounds.x, bounds.y + bounds.h / 2, TEXT_ALIGN_LEFT | TEXT_VALIGN_MIDDLE, ForeColor);
+	float x = bounds.x;
+	float y = bounds.y;
+
+	if (AlignFlags & TEXT_ALIGN_CENTER) {
+		x += bounds.w;
+	}
+	if (AlignFlags & TEXT_VALIGN_MIDDLE) {
+		y += bounds.h / 2;
+	}
+	else {
+		y += (Typeface->Ascent - Typeface->Descent) / 2;
+	}
+
+	if (WordWrap && MaxWrapWidth > 0.0f) {
+		UI::Graphics::Renderer::DrawFontWrapped(&Text, Typeface, x, y, AlignFlags, MaxWrapWidth, ForeColor);
+	}
+	else {
+		UI::Graphics::Renderer::DrawFont(&Text, Typeface, x, y, AlignFlags, ForeColor);
+	}
 }

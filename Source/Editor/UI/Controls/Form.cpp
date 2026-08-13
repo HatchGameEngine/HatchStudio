@@ -48,54 +48,6 @@ void Form::SetTitle(String* title) {
     }
 }
 
-void Form::RenderClear() {
-
-    //ViewOutput* viewOutput = &Graphics::ViewOutputs[0];
-    //if (viewOutput->Active) {
-    //    View* view = &Graphics::Views[viewOutput->ViewIndex];
-    //    // Determine output size
-    //    switch (viewOutput->ScaleType) {
-    //    case VOSCALE_NONE:
-    //        viewOutput->Width = view->Width;
-    //        viewOutput->Height = view->Height;
-    //        break;
-    //    case VOSCALE_FIT_TO_SCREEN:
-    //        if ((RendererW << 16) / view->Width > (RendererH << 16) / view->Height) {
-    //            viewOutput->Width = view->Width * RendererH / view->Height;
-    //            viewOutput->Height = RendererH;
-    //        }
-    //        else {
-    //            viewOutput->Width = RendererW;
-    //            viewOutput->Height = view->Height * RendererW / view->Width;
-    //        }
-    //        break;
-    //    case VOSCALE_COVER_TO_SCREEN:
-    //        if ((RendererW << 16) / view->Width > (RendererH << 16) / view->Height) {
-    //            viewOutput->Width = RendererW;
-    //            viewOutput->Height = view->Height * RendererW / view->Width;
-    //        }
-    //        else {
-    //            viewOutput->Width = view->Width * RendererH / view->Height;
-    //            viewOutput->Height = RendererH;
-    //        }
-    //        break;
-    //    case VOSCALE_STRETCH_TO_SCREEN:
-    //    case VOSCALE_RESIZE_TO_SCREEN:
-    //        viewOutput->Width = RendererW;
-    //        viewOutput->Height = RendererH;
-    //        break;
-    //    }
-
-    //    // Determine output position
-    //    if (viewOutput->ScaleType >= VOSCALE_NONE) {
-    //        viewOutput->X = (RendererW - viewOutput->Width) / 2;
-    //        viewOutput->Y = (RendererH - viewOutput->Height) / 2;
-    //    }
-    //}
-}
-void Form::RenderPresent() {
-}
-
 void Form::Load() {
     Strings::Init(&Title, 8);
 }
@@ -123,6 +75,15 @@ void Form::Show() {
 void Form::ShowDialog(Form* parent, DialogCallback callback) {
     CloseCallback = callback;
     IsDialog = true;
+}
+
+void Form::AdjustSize(Control* panel) {
+    UpdateLayout();
+
+    Size = {
+        panel->Controls.Last()->Location.X + panel->Controls.Last()->Size.Get().W + panel->Padding.Right,
+        panel->Controls.Last()->Location.Y + panel->Controls.Last()->Size.Get().H + panel->Padding.Bottom
+    };
 }
 
 void Form::CheckShortcuts(SDL_Keycode key, SDL_Keymod mod) {
