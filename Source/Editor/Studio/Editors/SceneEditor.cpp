@@ -216,7 +216,7 @@ bool SceneEditor::Read_RSDK(Stream* stream) {
             }
 
             size_t compressedSize;
-            RSDKTile* tileBoys;
+            RSDKTile* tileBoys = NULL;
             Memory::Alloc((void**)&tileBoys, sizeof(RSDKTile) * layer->DataWidth * layer->DataHeight, Memory::MEMPOOL_TEMP, false);
 
             compressedSize = M_MAX(layer->DataWidth, layer->DataHeight) << TILE_SIZE_IN_BITS;
@@ -973,7 +973,7 @@ bool SceneEditor::Save() {
 ResourceFileType SceneEditor::GetFileType(Stream* stream) {
     Uint32 magic = stream->ReadUInt32();
 
-    stream->Skip(-sizeof(Uint32));
+    stream->Skip(-4);
 
     switch (magic) {
     case MAGIC_SCENE_HSCN:

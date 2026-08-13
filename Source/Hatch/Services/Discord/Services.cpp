@@ -13,7 +13,7 @@
 
 #define DISCORD_REQUIRE(x) assert(x == DiscordResult_Ok)
 
-#pragma comment(lib, "discord_game_sdk.dll.lib")
+// #pragma comment(lib, "discord_game_sdk.dll.lib")
 
 struct Application {
     struct IDiscordCore* core;
@@ -60,9 +60,7 @@ namespace Services {
     }
 
     void Init() {
-        // ([A-Za-z0-9_]+) +\(\*([A-Za-z0-9_]+)\)\(([A-Za-z0-9_ \(\)\*,]*)\)
-        // $2 = []($3) -> $1 {}
-
+#if 0
         memset(&app, 0, sizeof(app));
         memset(&users_events, 0, sizeof(users_events));
         memset(&activities_events, 0, sizeof(activities_events));
@@ -106,6 +104,7 @@ namespace Services {
             printf("user.username: %s\n", user.username);
             //*/
         }
+#endif
 
         Service.Core.GetLocale = []() -> int { return 0; };
         Service.Core.GetConfirmButtonFlip = []() -> bool {
@@ -121,12 +120,14 @@ namespace Services {
             Game::Running = false;
         };
         Service.Core.Run = []() -> void { 
+#if 0
             if (CancelFunctions)
                 return;
 
             // DISCORD_REQUIRE(app.core->run_callbacks(app.core));
             if (app.core->run_callbacks(app.core) != DiscordResult_Ok)
                 CancelFunctions = true;
+#endif
         };
         Service.Core.LaunchManual = []() -> void {};
         Service.Core.GetSafeViewMargins = [](int* x1, int* y1, int* x2, int* y2) -> void {};
@@ -149,6 +150,7 @@ namespace Services {
         };
         Service.UserData.SetAchievementsEnabled = [](bool enabled) -> void {};
         Service.UserData.UpdateRichPresence = [](CString state, CString details, CString image, Sint64 timeStart, Sint64 timeEnd) -> void {
+#if 0
             if (CancelFunctions)
                 return;
 
@@ -164,6 +166,7 @@ namespace Services {
             activity.timestamps.end = timeEnd;
 
             app->activities->update_activity(app->activities, &activity, app, UpdateActivityCallback);
+#endif
         };
         Service.UserData.ClearRichPresence = []() -> void {};
 

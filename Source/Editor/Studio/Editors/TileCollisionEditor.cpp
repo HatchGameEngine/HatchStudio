@@ -88,7 +88,7 @@ bool TileCollisionEditor::Save() {
 ResourceFileType TileCollisionEditor::GetFileType(Stream* stream) {
     Uint32 magic = stream->ReadUInt32();
 
-    stream->Skip(-sizeof(Uint32));
+    stream->Skip(-4);
 
     switch (magic) {
     case MAGIC_TILESET_RSDK:

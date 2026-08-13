@@ -1149,9 +1149,12 @@ struct HatchStudioForm : Form {
         }
 
         // Handle the menu bar control first
+#ifndef USE_NATIVE_MENU
         MenuBarControl->HandleSDLEvent(e);
 
-        if (MenuBarControl->Dropdown == NULL) {
+        if (MenuBarControl->Dropdown == NULL)
+#endif
+        {
             // If a dropdown is up then don't handle the other controls
             for (int i = 0, iSz = Controls.Count(); i < iSz; i++) {
                 if (Controls.Items[i] != MenuBarControl) {

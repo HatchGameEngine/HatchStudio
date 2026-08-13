@@ -279,7 +279,7 @@ bool DropDown::HandleAltShortcuts(SDL_Event* e, void* menuPtr) {
 
 		// TODO: Handle items that have the same shortcut
 		int shortcut = item->AltShortcut & 0xFF;
-		if (shortcut == key || shortcut == toupper(key)) {
+		if (shortcut == key || shortcut == SDL_toupper(key)) {
 			if (item->Type == IT_SUBMENU) {
 				HighlightSelection(i);
 
