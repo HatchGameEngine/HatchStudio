@@ -183,15 +183,6 @@
     <ClCompile Include="..\..\..\Source\Editor\Studio\Editors\TileCollisionEditor.cpp">
       <Filter>Source Files\Studio\Editors</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileCollisionEditorPanel.cpp">
-      <Filter>Source Files\Studio\Subcontrols</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileDrawingWidget.cpp">
-      <Filter>Source Files\Studio\Subcontrols</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileSelector.cpp">
-      <Filter>Source Files\Studio\Subcontrols</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\Studio\StageTileset.cpp">
       <Filter>Source Files\Studio</Filter>
     </ClCompile>
@@ -209,6 +200,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Source\Hatch\Math.cpp">
       <Filter>Source Files\Studio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileCollisionEditorPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileDrawingWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Studio\Subcontrols\TileSelector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\UI\Controls\MenuBar.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -331,6 +334,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Libraries\tinyfiledialogs.h">
       <Filter>Source Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Editors\TileCollisionEditor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Subcontrols\TileCollisionEditorPanel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Subcontrols\TileDrawingWidget.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Studio\Subcontrols\TileSelector.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

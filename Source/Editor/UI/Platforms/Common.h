@@ -29,7 +29,6 @@ enum ItemType {
     IT_SEPARATOR
 };
 
-#ifndef USE_NATIVE_MENU
 struct IMenuItem {
     String Text;
     String ShortcutText;
@@ -41,16 +40,13 @@ struct IMenuItem {
     int Type;
     int Index;
 };
-#endif
 
 struct IMenu {
     void* Data;
 
-#ifndef USE_NATIVE_MENU
     IMenuItem** Items;
     int Capacity;
     int Count;
-#endif
 };
 
 extern void IMenu_Init(void);

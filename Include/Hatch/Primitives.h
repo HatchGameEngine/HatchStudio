@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#if _WINDOWS
+#ifdef _WIN32
 #include <io.h>
 #else
 #include <unistd.h>
